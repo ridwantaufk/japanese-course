@@ -1,42 +1,70 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* Force Tailwind v4 to use class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #0f172a;
+  }
+  .dark {
+    --background: #020617;
+    --foreground: #f8fafc;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+  
   body {
-    @apply antialiased transition-colors duration-500;
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-500;
   }
 }
 
-/* Custom Modern Scrollbar - Global Application */
 @layer utilities {
-  /* Webkit Scrollbar (Chrome, Safari, Edge) */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  /* Hiding Scrollbar */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* --- CUSTOM SCROLLBAR (GLOBAL) --- */
+  /* Apply to HTML to ensure it hits the main window scrollbar */
+  html::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  html::-webkit-scrollbar-track {
+    background: transparent; 
+  }
+  
+  html::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 dark:bg-slate-700 rounded-full border-[2px] border-transparent bg-clip-content hover:bg-slate-400 dark:hover:bg-slate-600;
   }
 
-  ::-webkit-scrollbar-track {
+  html::-webkit-scrollbar-corner {
     background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600 transition-colors;
-  }
-
-  ::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
-  /* Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
 }
 
-/* Define CSS Variables for consistency if needed */
-:root {
-  --scrollbar-thumb: #cbd5e1;
+/* --- FIX DROPDOWN/SELECT COLORS --- */
+/* Native selects are stubborn. We force the options to respect theme. */
+select {
+  @apply bg-white text-slate-900 dark:bg-[#1e293b] dark:text-slate-100 dark:border-white/10;
+  color-scheme: light dark; /* Helps browser UI adapt */
 }
-.dark {
-  --scrollbar-thumb: #334155;
+
+/* Target the dropdown list itself */
+select option {
+  @apply bg-white text-slate-900 dark:bg-[#0f172a] dark:text-slate-100;
 }
