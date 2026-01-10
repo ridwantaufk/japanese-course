@@ -15,7 +15,10 @@ export default function LearningNavbar() {
     { href: '/learning/kanji', label: 'Kanji', icon: LayoutGrid },
     { href: '/learning/vocabulary', label: 'Vocabulary', icon: BookOpen },
     { href: '/learning/grammar', label: 'Grammar', icon: GraduationCap },
+    { href: '/learning/conversations', label: 'Conversations', icon: BookOpen },
+    { href: '/learning/reading', label: 'Reading', icon: Languages },
     { href: '/learning/quiz', label: 'Quiz', icon: BrainCircuit },
+    { href: '/learning/jlpt', label: 'JLPT Exams', icon: GraduationCap },
   ];
 
   return (
