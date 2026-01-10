@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, LogOut, BookOpen, Users, Languages, ChevronRight, FileText, GraduationCap, BarChart3, Music, BrainCircuit } from 'lucide-react';
+import { LayoutDashboard, LogOut, BookOpen, Users, Languages, ChevronRight, FileText, GraduationCap, BarChart3, Music, BrainCircuit, Layers } from 'lucide-react';
 import { resources } from '@/lib/resources';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -12,11 +12,11 @@ export default function Sidebar() {
 
   const menuGroups = {
     'Analytics': ['vw_user_progress_summary', 'vw_content_stats'],
-    'User Management': ['users', 'study_sessions', 'user_progress'],
+    'User Management': ['users', 'study_sessions', 'user_progress', 'user_jlpt_results', 'user_quiz_results', 'user_notes', 'user_favorites'],
     'Basics & Kanji': ['hiragana', 'katakana', 'kanji', 'kanji_examples', 'kanji_compound'],
-    'Vocabulary': ['vocabulary', 'vocabulary_examples'],
-    'Grammar': ['grammar', 'grammar_examples'],
-    'Reading & Convo': ['conversations', 'conversation_lines', 'reading_texts', 'reading_sentences'],
+    'Vocabulary': ['vocabulary', 'vocabulary_examples', 'vocabulary_categories'],
+    'Grammar': ['grammar', 'grammar_examples', 'grammar_categories', 'grammar_conjugations'],
+    'Reading & Convo': ['conversations', 'conversation_lines', 'conversation_categories', 'reading_texts', 'reading_sentences', 'reading_categories'],
     'Quizzes & Tests': ['quiz_sets', 'quiz_questions', 'interactive_tests', 'memory_tests', 'translation_tests'],
     'JLPT Exams': ['jlpt_exams', 'jlpt_exam_sections', 'jlpt_reading_passages', 'jlpt_exam_questions'],
     'Assets': ['audio_files'],
@@ -25,9 +25,11 @@ export default function Sidebar() {
   const getIcon = (key) => {
     if (key.startsWith('vw_')) return BarChart3;
     if (['users', 'study_sessions', 'user_progress'].includes(key)) return Users;
+    if (key.includes('results') || key.includes('notes') || key.includes('favorites')) return Users;
     if (['hiragana', 'katakana', 'kanji', 'kanji_examples'].includes(key)) return Languages;
     if (key.includes('vocabulary')) return BookOpen;
     if (key.includes('grammar')) return BookOpen;
+    if (key.includes('categories')) return Layers;
     if (key.includes('audio')) return Music;
     if (['quiz_sets', 'interactive_tests'].includes(key)) return BrainCircuit;
     if (key.includes('jlpt')) return GraduationCap;
