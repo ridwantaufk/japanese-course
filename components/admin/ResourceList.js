@@ -3,16 +3,21 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Edit, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter, ArrowUpDown, ArrowUp, ArrowDown, X, CheckSquare, Square, Download, Loader2, List, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter, ArrowUpDown, ArrowUp, ArrowDown, X, CheckSquare, Square, Download, Loader2, List, ChevronsLeft, ChevronsRight, FileText, FileSpreadsheet, Printer, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useReactToPrint } from 'react-to-print';
+import ImportModal from './ImportModal';
 
 export default function ResourceList({ resourceKey, config, data, meta }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tableRef = useRef(null);
   
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [isCustomLimit, setIsCustomLimit] = useState(false);
@@ -20,35 +25,52 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
 
   useEffect(() => {
     setSelectedIds(new Set());
-    const currentLimit = meta.limit;
+    const currentLimit = parseInt(meta.limit || '10');
     const isAll = currentLimit === meta.total;
     const isPreset = [10, 25, 50, 100].includes(currentLimit) || isAll;
-    if (!isPreset && currentLimit > 0) setIsCustomLimit(true);
-    else setIsCustomLimit(false);
+    setIsCustomLimit(!isPreset && currentLimit > 0);
   }, [meta.page, meta.limit, meta.total, resourceKey, searchParams]);
 
-  const handleSearch = (term) => updateParams({ search: term, page: '1' });
-  const handleSort = (colKey) => {
-    const currentSort = searchParams.get('sort');
-    const currentOrder = searchParams.get('order');
-    let newOrder = 'asc';
-    if (currentSort === colKey && currentOrder === 'asc') newOrder = 'desc';
-    updateParams({ sort: colKey, order: newOrder });
+  // --- PRINT LOGIC ---
+  const handlePrint = useReactToPrint({
+    contentRef: tableRef,
+    documentTitle: `${config.label}_Report`,
+  });
+
+  // --- EXPORT LOGIC ---
+  const handleServerExport = (format) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('format', format);
+    window.open(`/api/admin/${resourceKey}/export?${params.toString()}`, '_blank');
+    setShowExportMenu(false);
   };
-  const handleFilterChange = (key, value) => updateParams({ [key]: value, page: '1' });
-  const handleLimitChange = (val) => {
-    if (val === 'custom') {
-        setIsCustomLimit(true);
-        setTimeout(() => customInputRef.current?.focus(), 100);
-        return;
+
+  const handleClientExport = async (format) => {
+    const exportData = data.filter(d => selectedIds.has(d[config.primaryKey]));
+    if (exportData.length === 0) return alert("Please select items.");
+
+    const filename = `${resourceKey}_export_${new Date().toISOString().slice(0,10)}`;
+
+    if (format === 'xlsx' || format === 'csv') {
+        const XLSX = await import('xlsx');
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data");
+        XLSX.writeFile(wb, `${filename}.${format}`);
+    } else if (format === 'pdf') {
+        const jsPDF = (await import('jspdf')).default;
+        const autoTable = (await import('jspdf-autotable')).default;
+        const doc = new jsPDF();
+        const headers = config.columns.map(c => c.label);
+        const body = exportData.map(row => config.columns.map(c => String(row[c.key] || '')));
+        doc.text(`${config.label} Selection Report`, 14, 15);
+        autoTable(doc, { head: [headers], body, startY: 20, theme: 'striped' });
+        doc.save(`${filename}.pdf`);
     }
-    setIsCustomLimit(false);
-    updateParams({ limit: val, page: '1' });
+    setShowExportMenu(false);
   };
-  const handleCustomLimitSubmit = (e) => {
-      const val = e.target.value;
-      if (val && !isNaN(val) && parseInt(val) > 0) updateParams({ limit: val, page: '1' });
-  };
+
+  // --- ACTIONS ---
   const updateParams = (updates) => {
     const params = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
@@ -57,228 +79,198 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
     });
     router.replace(`${pathname}?${params.toString()}`);
   };
-  const clearFilters = () => { router.replace(pathname); setShowFilters(false); };
-  const handleSelectAll = () => {
-    if (selectedIds.size === data.length && data.length > 0) setSelectedIds(new Set());
-    else setSelectedIds(new Set(data.map(d => d[config.primaryKey])));
-  };
-  const handleSelectRow = (id) => {
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) newSelected.delete(id); else newSelected.add(id);
-    setSelectedIds(newSelected);
-  };
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-    setDeletingId(id);
-    try {
-      const res = await fetch(`/api/admin/${resourceKey}/${id}`, { method: 'DELETE' });
-      if (res.ok) router.refresh(); else alert('Failed to delete');
-    } catch (err) { alert('Error deleting'); } finally { setDeletingId(null); }
-  };
+
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selectedIds.size} items?`)) return;
     setIsDeleting(true);
     try {
       await Promise.all(Array.from(selectedIds).map(id => fetch(`/api/admin/${resourceKey}/${id}`, { method: 'DELETE' })));
       router.refresh(); setSelectedIds(new Set());
-    } catch (err) { alert('Error during bulk delete'); } finally { setIsDeleting(false); }
+    } catch (e) { alert('Error deleting'); } finally { setIsDeleting(false); }
   };
-  const handleExportCSV = () => {
-    const rowsToExport = data.filter(d => selectedIds.has(d[config.primaryKey]));
-    if (rowsToExport.length === 0) return;
-    const headers = config.columns.map(c => c.label).join(',');
-    const rows = rowsToExport.map(row => config.columns.map(c => `"${String(row[c.key] || '').replace(/"/g, '""')}"`).join(','));
-    const csvContent = [headers, ...rows].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a'); link.href = url;
-    link.setAttribute('download', `${resourceKey}_export.csv`);
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-  };
-  const getSortIcon = (colKey) => {
-    const sort = searchParams.get('sort');
-    const order = searchParams.get('order');
-    if (sort !== colKey) return <ArrowUpDown size={14} className="opacity-30" />;
-    return order === 'asc' ? <ArrowUp size={14} className="text-indigo-600 dark:text-indigo-400" /> : <ArrowDown size={14} className="text-indigo-600 dark:text-indigo-400" />;
+
+  const handleSelectRow = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+    setSelectedIds(newSet);
   };
 
   const getPageNumbers = () => {
     const total = meta.totalPages;
     const current = meta.page;
-    const delta = 1;
     const range = [];
-    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) range.push(i);
-    if (current - delta > 2) range.unshift('...');
-    if (current + delta < total - 1) range.push('...');
-    range.unshift(1);
-    if (total > 1) range.push(total);
+    for (let i = Math.max(1, current - 1); i <= Math.min(total, current + 1); i++) range.push(i);
     return range;
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-32 relative">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-32">
+      
+      {/* HEADER */}
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">{config.label}</h1>
-           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
-             {config.readOnly ? 'View-only analytical data.' : `Manage ${config.label.toLowerCase()}.`}
-           </p>
+           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{config.label}</h1>
+           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">Database Management Panel</p>
         </div>
-        {!config.readOnly && (
-          <Link href={`/admin/${resourceKey}/new`} className="group inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-500 transition-all hover:bg-indigo-700 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm">
-            <Plus size={18} className="transition-transform group-hover:rotate-90" /> Add New Record
-          </Link>
-        )}
+        
+        <div className="flex gap-2">
+          {!config.readOnly && (
+            <button onClick={() => setShowImport(true)} className="group flex items-center gap-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
+              <Upload size={18} /> Import
+            </button>
+          )}
+          
+          <div className="relative">
+            <button onClick={() => setShowExportMenu(!showExportMenu)} className="flex items-center gap-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-all">
+              <Download size={18} /> Export
+            </button>
+            
+            {showExportMenu && (
+              <div className="absolute right-0 top-12 z-50 w-56 rounded-2xl bg-white dark:bg-[#1e293b] p-2 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in zoom-in-95">
+                <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">Database (All)</div>
+                <button onClick={() => handleServerExport('xlsx')} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-white/5 hover:text-indigo-600"><FileSpreadsheet size={16} /> Excel Full</button>
+                <button onClick={() => handleServerExport('csv')} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-white/5 hover:text-indigo-600"><FileText size={16} /> CSV Full</button>
+                <div className="my-2 h-px bg-slate-100 dark:bg-white/5"></div>
+                <button onClick={handlePrint} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-white/5 hover:text-indigo-600"><Printer size={16} /> Print Table</button>
+              </div>
+            )}
+          </div>
+
+          {!config.readOnly && (
+            <Link href={`/admin/${resourceKey}/new`} className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all">
+              <Plus size={18} /> Add New
+            </Link>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white/60 p-2 shadow-xl shadow-slate-200/20 backdrop-blur-md dark:bg-white/5 dark:shadow-none dark:ring-1 dark:ring-white/10">
+      {/* TOOLBAR */}
+      <div className="flex flex-col gap-4 rounded-3xl bg-white/50 dark:bg-white/5 p-2 shadow-xl dark:shadow-none backdrop-blur-xl border border-white/20 dark:border-white/10">
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-            <input type="text" placeholder="Search database..." defaultValue={searchParams.get('search')?.toString()} onChange={(e) => handleSearch(e.target.value)} className="w-full rounded-xl border-none bg-transparent pl-10 pr-4 py-2 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:ring-0 dark:text-slate-200" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input type="text" placeholder="Search records..." defaultValue={searchParams.get('search')?.toString()} onChange={(e) => updateParams({search: e.target.value, page: '1'})} className="w-full rounded-2xl border-none bg-transparent pl-12 pr-4 py-3 text-sm font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:ring-0" />
           </div>
-          <div className="h-6 w-px bg-slate-200 dark:bg-white/10"></div>
-          <button onClick={() => setShowFilters(!showFilters)} className={cn("flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors", showFilters ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white")}><Filter size={16} /> Filters</button>
+          <button onClick={() => setShowFilters(!showFilters)} className={cn("flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold transition-all", showFilters ? "bg-indigo-600 text-white shadow-lg" : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400")}><Filter size={16} /> Filters</button>
         </div>
+        
         {showFilters && (
-          <div className="grid gap-4 border-t border-slate-200/50 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-white/5 animate-in slide-in-from-top-2 duration-300">
-            {config.columns.filter(col => col.filterable).map(col => (
+          <div className="grid gap-4 border-t border-slate-100 dark:border-white/5 p-4 sm:grid-cols-2 lg:grid-cols-4">
+            {config.columns.filter(c => c.filterable).map(col => (
               <div key={col.key}>
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{col.label}</label>
-                {col.type === 'select' || col.type === 'boolean' ? (
-                  <select className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-200" value={searchParams.get(col.key) || ''} onChange={(e) => handleFilterChange(col.key, e.target.value)}>
-                    <option value="">All</option>
-                    {col.type === 'boolean' && (<><option value="true">Yes</option><option value="false">No</option></>)}
-                    {col.options?.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
-                  </select>
-                ) : (
-                  <input type="text" className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-200 placeholder:text-slate-500" placeholder={`Filter ${col.label}...`} defaultValue={searchParams.get(col.key) || ''} onBlur={(e) => handleFilterChange(col.key, e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleFilterChange(col.key, e.currentTarget.value)} />
-                )}
+                <label className="mb-1.5 block text-[10px] font-black uppercase tracking-widest text-slate-400">{col.label}</label>
+                <input type="text" className="w-full rounded-xl border-none bg-slate-100 dark:bg-black/20 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/50" placeholder="Type to filter..." defaultValue={searchParams.get(col.key) || ''} onBlur={(e) => updateParams({[col.key]: e.target.value, page: '1'})} />
               </div>
             ))}
-            <div className="flex items-end"><button onClick={clearFilters} className="w-full rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">Clear Filters</button></div>
+            <div className="flex items-end"><button onClick={() => router.replace(pathname)} className="w-full rounded-xl bg-slate-200 dark:bg-white/10 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-white/20 transition-all">Reset All</button></div>
           </div>
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-200/60 bg-white/40 shadow-2xl shadow-slate-200/40 backdrop-blur-md overflow-hidden dark:border-white/5 dark:bg-[#1e293b]/30 dark:shadow-none">
-        <div className="overflow-x-auto min-h-[300px]">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200/60 bg-slate-50/50 dark:border-white/5 dark:bg-white/5">
+      {/* DATA TABLE */}
+      <div className="rounded-3xl border border-slate-200/50 dark:border-white/10 bg-white/40 dark:bg-[#0f172a]/40 shadow-2xl backdrop-blur-md overflow-hidden">
+        <div className="overflow-x-auto" ref={tableRef}>
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-50/50 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest">
               <tr>
-                <th className="w-10 px-6 py-4"><button onClick={handleSelectAll} className="flex items-center text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 transition-colors">{selectedIds.size === data.length && data.length > 0 ? <CheckSquare size={18} /> : <Square size={18} />}</button></th>
-                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-16">No.</th>
+                <th className="px-6 py-5 w-10"><button onClick={() => setSelectedIds(selectedIds.size === data.length ? new Set() : new Set(data.map(d => d[config.primaryKey])))} className="text-slate-400 hover:text-indigo-600 transition-colors"><CheckSquare size={20} /></button></th>
+                <th className="px-6 py-5 w-16 text-center">No.</th>
                 {config.columns.map(col => (
-                  <th key={col.key} className="group cursor-pointer px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-100/50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-indigo-300 transition-colors" onClick={() => handleSort(col.key)}>
-                    <div className="flex items-center gap-2">{col.label}{getSortIcon(col.key)}</div>
+                  <th key={col.key} className="px-6 py-5 cursor-pointer hover:text-indigo-600 transition-colors" onClick={() => handleSort(col.key)}>
+                    <div className="flex items-center gap-2">{col.label} <ArrowUpDown size={12} className="opacity-30" /></div>
                   </th>
                 ))}
-                {!config.readOnly && <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Actions</th>}
+                {!config.readOnly && <th className="px-6 py-5 text-right pr-10">Action</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-              {data.length === 0 ? (
-                <tr><td colSpan={config.columns.length + 3} className="px-6 py-24 text-center"><div className="flex flex-col items-center justify-center opacity-50"><Search size={32} className="mb-4" /><p className="text-base font-medium">No records found</p></div></td></tr>
-              ) : (
-                data.map((row, index) => {
-                  const rowId = row[config.primaryKey];
-                  const isSelected = selectedIds.has(rowId);
-                  const rowNum = (meta.page - 1) * (meta.limit || 0) + index + 1;
-                  const isRowDeleting = deletingId === rowId;
-                  return (
-                    <tr key={rowId || Math.random()} className={cn("group transition-colors", isSelected ? "bg-indigo-50/50 dark:bg-indigo-500/10" : "hover:bg-white/60 dark:hover:bg-white/5")}>
-                      <td className="px-6 py-4"><button onClick={() => handleSelectRow(rowId)} className={cn("flex items-center transition-colors", isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400")}>{isSelected ? <CheckSquare size={18} /> : <Square size={18} />}</button></td>
-                      <td className="px-6 py-4 font-mono text-xs text-slate-400 dark:text-slate-500">{rowNum}</td>
-                      {config.columns.map(col => (<td key={col.key} className="px-6 py-4 text-slate-700 font-medium dark:text-slate-300">{renderCell(row[col.key], col.type)}</td>))}
-                      {!config.readOnly && (
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                            <Link href={`/admin/${resourceKey}/${rowId}`} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-400"><Edit size={16} /></Link>
-                            <button onClick={() => handleDelete(rowId)} disabled={isRowDeleting} className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:text-red-400">{isRowDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}</button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })
-              )}
+              {data.map((row, index) => {
+                const rowId = row[config.primaryKey];
+                const isSelected = selectedIds.has(rowId);
+                return (
+                  <tr key={rowId} className={cn("group transition-all duration-300", isSelected ? "bg-indigo-500/10 dark:bg-indigo-500/20" : "hover:bg-white/60 dark:hover:bg-white/5")}>
+                    <td className="px-6 py-4"><button onClick={() => handleSelectRow(rowId)} className={cn("transition-all duration-300", isSelected ? "text-indigo-600 scale-110" : "text-slate-300 dark:text-slate-700")}>{isSelected ? <CheckSquare size={20} /> : <Square size={20} />}</button></td>
+                    <td className="px-6 py-4 font-mono text-[11px] text-slate-400 text-center">{(meta.page-1)*(meta.limit||0) + index + 1}</td>
+                    {config.columns.map(col => <td key={col.key} className="px-6 py-4 text-slate-700 dark:text-slate-300 font-medium truncate max-w-[250px]">{String(row[col.key] || '-')}</td>)}
+                    {!config.readOnly && (
+                      <td className="px-6 py-4 text-right pr-8">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                          <Link href={`/admin/${resourceKey}/${rowId}`} className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"><Edit size={16} /></Link>
+                          <button onClick={() => handleDelete(rowId)} className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-red-600 dark:hover:text-red-400 transition-all"><Trash2 size={16} /></button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
         
-        <div className="flex flex-col gap-4 border-t border-slate-200/60 bg-slate-50/30 px-6 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/5 dark:bg-white/5">
-          <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span>Show:</span>
+        {/* FOOTER */}
+        <div className="flex flex-col gap-4 bg-slate-50/50 dark:bg-white/5 px-8 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-6">
+             <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black uppercase text-slate-400">Show:</span>
                 {isCustomLimit ? (
-                   <div className="flex items-center gap-1 rounded-md bg-white p-0.5 ring-1 ring-slate-200 dark:bg-[#1e293b] dark:ring-white/10">
-                     <input ref={customInputRef} type="number" min="1" className="w-16 rounded border-none bg-transparent px-2 py-1 text-center text-xs font-semibold text-slate-700 focus:ring-0 dark:text-slate-200" defaultValue={meta.limit} onBlur={handleCustomLimitSubmit} onKeyDown={(e) => e.key === 'Enter' && handleCustomLimitSubmit(e)} />
-                     <button onClick={() => setIsCustomLimit(false)} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-200" title="Back to list"><List size={12} /></button>
+                   <div className="flex items-center gap-1 rounded-xl bg-white dark:bg-black/20 p-1 ring-1 ring-slate-200 dark:ring-white/10 shadow-sm">
+                     <input ref={customInputRef} type="number" className="w-12 border-none bg-transparent text-center text-xs font-bold dark:text-white focus:ring-0" defaultValue={meta.limit} onBlur={handleCustomLimitSubmit} onKeyDown={(e) => e.key === 'Enter' && handleCustomLimitSubmit(e)} />
+                     <button onClick={() => setIsCustomLimit(false)} className="p-1 text-slate-400 hover:text-slate-600"><List size={12} /></button>
                    </div>
                 ) : (
-                  <select className="rounded border border-slate-200 bg-white px-2 py-1 text-slate-700 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-300" value={meta.limit === meta.total ? 'all' : meta.limit} onChange={(e) => handleLimitChange(e.target.value)}>
-                    <option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="all">All</option><option value="custom">Custom...</option>
+                  <select className="rounded-xl border-none bg-white dark:bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-sm focus:ring-2 focus:ring-indigo-500/50" value={meta.limit} onChange={(e) => handleLimitChange(e.target.value)}>
+                    {[10, 25, 50, 100].map(v => <option key={v} value={v}>{v}</option>)}
+                    <option value="all">All</option>
+                    <option value="custom">...</option>
                   </select>
                 )}
              </div>
-             <div className="h-4 w-px bg-slate-300 dark:bg-white/10"></div>
-             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total: <span className="text-slate-900 dark:text-white">{meta.total}</span> records</span>
+             <span className="text-[10px] font-black uppercase text-slate-400">Total: <span className="text-slate-900 dark:text-white">{meta.total}</span></span>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: 1}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page <= 1 && "pointer-events-none opacity-50")}></Link>
-            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.page - 1}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page <= 1 && "pointer-events-none opacity-50")}></Link>
-            
-            {getPageNumbers().map((pageNum, i) => (
-                pageNum === '...' ? (
-                    <span key={i} className="px-2 text-xs text-slate-400">...</span>
-                ) : (
-                    <Link key={i} href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: pageNum}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition-all", meta.page === pageNum ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white")}>
-                        {pageNum}
-                    </Link>
-                )
-            ))}
-
-            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.page + 1}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page >= meta.totalPages && "pointer-events-none opacity-50")}></Link>
-            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.totalPages}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page >= meta.totalPages && "pointer-events-none opacity-50")}></Link>
+          <div className="flex items-center gap-2">
+            <button onClick={() => updateParams({page: 1})} disabled={meta.page <= 1} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30"><ChevronsLeft size={16} /></button>
+            <button onClick={() => updateParams({page: meta.page - 1})} disabled={meta.page <= 1} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30"><ChevronLeft size={16} /></button>
+            <div className="px-4 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-lg shadow-indigo-600/20">PAGE {meta.page} / {meta.totalPages}</div>
+            <button onClick={() => updateParams({page: meta.page + 1})} disabled={meta.page >= meta.totalPages} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30"><ChevronRight size={16} /></button>
+            <button onClick={() => updateParams({page: meta.totalPages})} disabled={meta.page >= meta.totalPages} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30"><ChevronsRight size={16} /></button>
           </div>
         </div>
       </div>
 
+      {/* DOCK STYLE SELECT MODAL - FIXED DARK MODE */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full border border-white/20 bg-slate-900/80 px-6 py-3 text-white shadow-2xl backdrop-blur-xl transition-all animate-in slide-in-from-bottom-8 fade-in duration-500 hover:scale-105 dark:bg-white/10 dark:border-white/10">
-            <span className="flex items-center gap-2 text-sm font-semibold tracking-wide">
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold">{selectedIds.size}</div>
-                Selected
-            </span>
-            <div className="h-5 w-px bg-white/20"></div>
+        <div className="fixed bottom-10 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-white/20 bg-slate-950/90 dark:bg-white/90 p-2.5 pl-8 pr-2.5 text-white dark:text-slate-950 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl animate-in slide-in-from-bottom-10 duration-500 scale-110">
+            <span className="text-sm font-black italic tracking-tighter mr-4 underline decoration-indigo-500 decoration-2 underline-offset-4">{selectedIds.size} ITEMS SELECTED</span>
             
-            <button onClick={handleExportCSV} className="group flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-white/20 hover:shadow-lg hover:shadow-white/5">
-               <Download size={14} className="group-hover:animate-bounce" /> Export
-            </button>
+            <div className="flex gap-1">
+                <button onClick={() => handleClientExport('pdf')} className="group flex items-center gap-2 rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white/10 dark:hover:bg-black/10"><FileText size={14} className="group-hover:text-red-400 transition-colors" /> PDF</button>
+                <button onClick={() => handleClientExport('xlsx')} className="group flex items-center gap-2 rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white/10 dark:hover:bg-black/10"><FileSpreadsheet size={14} className="group-hover:text-green-400 transition-colors" /> XLSX</button>
+            </div>
 
             {!config.readOnly && (
-              <button onClick={handleBulkDelete} disabled={isDeleting} className="group flex items-center gap-2 rounded-full bg-red-500/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 disabled:opacity-50">
-                 {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />} Delete
+              <button onClick={handleBulkDelete} disabled={isDeleting} className="ml-2 flex items-center gap-2 rounded-full bg-red-600 px-6 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-red-600/40 hover:bg-red-500 hover:scale-105 active:scale-95 transition-all">
+                 {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />} Delete All
               </button>
             )}
             
-            <button onClick={() => setSelectedIds(new Set())} className="ml-2 rounded-full bg-white/5 p-1.5 text-slate-300 transition-colors hover:bg-white/20 hover:text-white"><X size={14} /></button>
+            <button onClick={() => setSelectedIds(new Set())} className="ml-2 rounded-full bg-white/10 dark:bg-black/10 p-2.5 hover:rotate-90 transition-all duration-300"><X size={16} /></button>
         </div>
       )}
+
+      {showImport && <ImportModal resourceKey={resourceKey} config={config} onClose={() => setShowImport(false)} onSuccess={() => { setShowImport(false); router.refresh(); }} />}
     </div>
   );
 }
 
 function renderCell(value, type) {
-  if (value === null || value === undefined) return <span className="text-slate-300 dark:text-slate-600">-</span>;
+  if (value === null || value === undefined) return <span className="text-slate-300 dark:text-slate-700">-</span>;
   switch(type) {
     case 'boolean':
-      return (<span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide border", value ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-700/30 dark:text-slate-400 dark:border-slate-700/50")}><span className={cn("h-1.5 w-1.5 rounded-full", value ? "bg-emerald-500" : "bg-slate-400")}></span>{value ? 'Yes' : 'No'}</span>);
+      return (<span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest border", value ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-slate-500/10 text-slate-500 border-slate-500/20")}>{value ? 'Enabled' : 'Disabled'}</span>);
     case 'date':
-      return <span className="font-mono text-xs opacity-80">{new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>;
+      return <span className="font-mono text-[11px] opacity-60 italic">{new Date(value).toLocaleDateString()}</span>;
     default:
-      if (typeof value === 'object') return <span className="text-xs opacity-50 italic">JSON Data</span>;
-      return <span className="truncate block max-w-[200px]">{String(value)}</span>;
+      return <span>{String(value)}</span>;
   }
 }
