@@ -14,7 +14,7 @@ export async function GET(request, { params }) {
   
   // Pagination
   const page = parseInt(searchParams.get('page') || '1');
-  const limitParam = searchParams.get('limit') || '25';
+  const limitParam = searchParams.get('limit') || '10';
   const limit = limitParam === 'all' ? null : parseInt(limitParam); // null limit means All in some logic, but usually we need a big number
   const offset = limit ? (page - 1) * limit : 0;
 

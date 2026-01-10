@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Edit, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter, ArrowUpDown, ArrowUp, ArrowDown, X, CheckSquare, Square, Download, Loader2, List } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter, ArrowUpDown, ArrowUp, ArrowDown, X, CheckSquare, Square, Download, Loader2, List, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ResourceList({ resourceKey, config, data, meta }) {
@@ -22,7 +22,7 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
     setSelectedIds(new Set());
     const currentLimit = meta.limit;
     const isAll = currentLimit === meta.total;
-    const isPreset = [25, 50, 100].includes(currentLimit) || isAll;
+    const isPreset = [10, 25, 50, 100].includes(currentLimit) || isAll;
     if (!isPreset && currentLimit > 0) setIsCustomLimit(true);
     else setIsCustomLimit(false);
   }, [meta.page, meta.limit, meta.total, resourceKey, searchParams]);
@@ -83,68 +83,85 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
       router.refresh(); setSelectedIds(new Set());
     } catch (err) { alert('Error during bulk delete'); } finally { setIsDeleting(false); }
   };
-    const handleExportCSV = () => {
-      const rowsToExport = data.filter(d => selectedIds.has(d[config.primaryKey]));
-      if (rowsToExport.length === 0) return;
-      const headers = config.columns.map(c => c.label).join(',');
-      const csv = [headers, ...rowsToExport.map(r => config.columns.map(c => `"${String(r[c.key] || '').replace(/"/g, '""')}"`).join(','))].join('\n');
-      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-          const a = document.createElement('a'); a.href = url; a.download = `${resourceKey}.csv`; a.click();
-        };
-      
-        const getSortIcon = (colKey) => {
-          const sort = searchParams.get('sort');
-          const order = searchParams.get('order');
-          if (sort !== colKey) return <ArrowUpDown size={14} className="opacity-30" />;
-          return order === 'asc' ? <ArrowUp size={14} className="text-indigo-600 dark:text-indigo-400" /> : <ArrowDown size={14} className="text-indigo-600 dark:text-indigo-400" />;
-        };
-      
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-24 relative">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                 <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">{config.label}</h1>
-                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
-                   {config.readOnly ? 'View-only analytical data.' : `Manage ${config.label.toLowerCase()}.`}
-                 </p>
+  const handleExportCSV = () => {
+    const rowsToExport = data.filter(d => selectedIds.has(d[config.primaryKey]));
+    if (rowsToExport.length === 0) return;
+    const headers = config.columns.map(c => c.label).join(',');
+    const rows = rowsToExport.map(row => config.columns.map(c => `"${String(row[c.key] || '').replace(/"/g, '""')}"`).join(','));
+    const csvContent = [headers, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a'); link.href = url;
+    link.setAttribute('download', `${resourceKey}_export.csv`);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  };
+  const getSortIcon = (colKey) => {
+    const sort = searchParams.get('sort');
+    const order = searchParams.get('order');
+    if (sort !== colKey) return <ArrowUpDown size={14} className="opacity-30" />;
+    return order === 'asc' ? <ArrowUp size={14} className="text-indigo-600 dark:text-indigo-400" /> : <ArrowDown size={14} className="text-indigo-600 dark:text-indigo-400" />;
+  };
+
+  const getPageNumbers = () => {
+    const total = meta.totalPages;
+    const current = meta.page;
+    const delta = 1;
+    const range = [];
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) range.push(i);
+    if (current - delta > 2) range.unshift('...');
+    if (current + delta < total - 1) range.push('...');
+    range.unshift(1);
+    if (total > 1) range.push(total);
+    return range;
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-32 relative">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+           <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight">{config.label}</h1>
+           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
+             {config.readOnly ? 'View-only analytical data.' : `Manage ${config.label.toLowerCase()}.`}
+           </p>
+        </div>
+        {!config.readOnly && (
+          <Link href={`/admin/${resourceKey}/new`} className="group inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-500 transition-all hover:bg-indigo-700 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm">
+            <Plus size={18} className="transition-transform group-hover:rotate-90" /> Add New Record
+          </Link>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-4 rounded-2xl bg-white/60 p-2 shadow-xl shadow-slate-200/20 backdrop-blur-md dark:bg-white/5 dark:shadow-none dark:ring-1 dark:ring-white/10">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <input type="text" placeholder="Search database..." defaultValue={searchParams.get('search')?.toString()} onChange={(e) => handleSearch(e.target.value)} className="w-full rounded-xl border-none bg-transparent pl-10 pr-4 py-2 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:ring-0 dark:text-slate-200" />
+          </div>
+          <div className="h-6 w-px bg-slate-200 dark:bg-white/10"></div>
+          <button onClick={() => setShowFilters(!showFilters)} className={cn("flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors", showFilters ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white")}><Filter size={16} /> Filters</button>
+        </div>
+        {showFilters && (
+          <div className="grid gap-4 border-t border-slate-200/50 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-white/5 animate-in slide-in-from-top-2 duration-300">
+            {config.columns.filter(col => col.filterable).map(col => (
+              <div key={col.key}>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{col.label}</label>
+                {col.type === 'select' || col.type === 'boolean' ? (
+                  <select className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-200" value={searchParams.get(col.key) || ''} onChange={(e) => handleFilterChange(col.key, e.target.value)}>
+                    <option value="">All</option>
+                    {col.type === 'boolean' && (<><option value="true">Yes</option><option value="false">No</option></>)}
+                    {col.options?.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
+                  </select>
+                ) : (
+                  <input type="text" className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-200 placeholder:text-slate-500" placeholder={`Filter ${col.label}...`} defaultValue={searchParams.get(col.key) || ''} onBlur={(e) => handleFilterChange(col.key, e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleFilterChange(col.key, e.currentTarget.value)} />
+                )}
               </div>
-              {!config.readOnly && (
-                <Link href={`/admin/${resourceKey}/new`} className="group inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-500 transition-all hover:bg-indigo-700 hover:shadow-indigo-600/40 hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm">
-                  <Plus size={18} className="transition-transform group-hover:rotate-90" /> Add New Record
-                </Link>
-              )}
-            </div>
-      
-            <div className="flex flex-col gap-4 rounded-2xl bg-white/60 p-2 shadow-xl shadow-slate-200/20 backdrop-blur-md dark:bg-white/5 dark:shadow-none dark:ring-1 dark:ring-white/10">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-                  <input type="text" placeholder="Search database..." defaultValue={searchParams.get('search')?.toString()} onChange={(e) => handleSearch(e.target.value)} className="w-full rounded-xl border-none bg-transparent pl-10 pr-4 py-2 text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:ring-0 dark:text-slate-200" />
-                </div>
-                <div className="h-6 w-px bg-slate-200 dark:bg-white/10"></div>
-                <button onClick={() => setShowFilters(!showFilters)} className={cn("flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors", showFilters ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white")}><Filter size={16} /> Filters</button>
-              </div>
-              {showFilters && (
-                <div className="grid gap-4 border-t border-slate-200/50 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-white/5 animate-in slide-in-from-top-2 duration-300">
-                  {config.columns.filter(col => col.filterable).map(col => (
-                    <div key={col.key}>
-                      <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{col.label}</label>
-                      {col.type === 'select' || col.type === 'boolean' ? (
-                        <select className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-200" value={searchParams.get(col.key) || ''} onChange={(e) => handleFilterChange(col.key, e.target.value)}>
-                          <option value="">All</option>
-                          {col.type === 'boolean' && (<><option value="true">Yes</option><option value="false">No</option></>)}
-                          {col.options?.map(opt => (<option key={opt} value={opt}>{opt}</option>))}
-                        </select>
-                      ) : (
-                        <input type="text" className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-200 placeholder:text-slate-500" placeholder={`Filter ${col.label}...`} defaultValue={searchParams.get(col.key) || ''} onBlur={(e) => handleFilterChange(col.key, e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleFilterChange(col.key, e.currentTarget.value)} />
-                      )}
-                    </div>
-                  ))}
-                  <div className="flex items-end"><button onClick={clearFilters} className="w-full rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">Clear Filters</button></div>
-                </div>
-              )}
-            </div>
-            <div className="rounded-2xl border border-slate-200/60 bg-white/40 shadow-2xl shadow-slate-200/40 backdrop-blur-md overflow-hidden dark:border-white/5 dark:bg-[#1e293b]/30 dark:shadow-none">
+            ))}
+            <div className="flex items-end"><button onClick={clearFilters} className="w-full rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20">Clear Filters</button></div>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-2xl border border-slate-200/60 bg-white/40 shadow-2xl shadow-slate-200/40 backdrop-blur-md overflow-hidden dark:border-white/5 dark:bg-[#1e293b]/30 dark:shadow-none">
         <div className="overflow-x-auto min-h-[300px]">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-slate-200/60 bg-slate-50/50 dark:border-white/5 dark:bg-white/5">
@@ -188,6 +205,7 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
             </tbody>
           </table>
         </div>
+        
         <div className="flex flex-col gap-4 border-t border-slate-200/60 bg-slate-50/30 px-6 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/5 dark:bg-white/5">
           <div className="flex items-center gap-4">
              <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -199,28 +217,53 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
                    </div>
                 ) : (
                   <select className="rounded border border-slate-200 bg-white px-2 py-1 text-slate-700 focus:outline-none dark:border-white/10 dark:bg-[#1e293b] dark:text-slate-300" value={meta.limit === meta.total ? 'all' : meta.limit} onChange={(e) => handleLimitChange(e.target.value)}>
-                    <option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="all">All</option><option value="custom">Custom...</option>
+                    <option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="all">All</option><option value="custom">Custom...</option>
                   </select>
                 )}
              </div>
              <div className="h-4 w-px bg-slate-300 dark:bg-white/10"></div>
              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total: <span className="text-slate-900 dark:text-white">{meta.total}</span> records</span>
           </div>
-          <div className="flex gap-2">
-            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.page - 1}).toString()}`} className={cn("flex items-center justify-center h-8 w-8 rounded-lg border border-slate-200 bg-white transition-all hover:border-indigo-300 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page <= 1 && "pointer-events-none opacity-50")}><ChevronLeft size={16} /></Link>
-            <div className="flex items-center justify-center px-3 h-8 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 dark:bg-white/5 dark:border-white/10 dark:text-slate-300">Page {meta.page} of {meta.totalPages}</div>
-            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.page + 1}).toString()}`} className={cn("flex items-center justify-center h-8 w-8 rounded-lg border border-slate-200 bg-white transition-all hover:border-indigo-300 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page >= meta.totalPages && "pointer-events-none opacity-50")}><ChevronRight size={16} /></Link>
+
+          <div className="flex items-center gap-1.5">
+            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: 1}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page <= 1 && "pointer-events-none opacity-50")}></Link>
+            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.page - 1}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page <= 1 && "pointer-events-none opacity-50")}></Link>
+            
+            {getPageNumbers().map((pageNum, i) => (
+                pageNum === '...' ? (
+                    <span key={i} className="px-2 text-xs text-slate-400">...</span>
+                ) : (
+                    <Link key={i} href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: pageNum}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition-all", meta.page === pageNum ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white")}>
+                        {pageNum}
+                    </Link>
+                )
+            ))}
+
+            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.page + 1}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page >= meta.totalPages && "pointer-events-none opacity-50")}></Link>
+            <Link href={`${pathname}?${new URLSearchParams({...Object.fromEntries(searchParams), page: meta.totalPages}).toString()}`} className={cn("flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white transition-all hover:bg-slate-50 hover:text-indigo-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white", meta.page >= meta.totalPages && "pointer-events-none opacity-50")}></Link>
           </div>
         </div>
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-slate-900/90 p-2 px-4 text-white shadow-2xl backdrop-blur-md dark:bg-white/90 dark:text-slate-900 animate-in slide-in-from-bottom-6 fade-in duration-300">
-            <span className="text-sm font-medium ml-2">{selectedIds.size} selected</span>
-            <div className="h-4 w-px bg-white/20 dark:bg-black/10 mx-2"></div>
-            <button onClick={handleExportCSV} className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-indigo-500"><Download size={14} /> Export CSV</button>
-            {!config.readOnly && (<button onClick={handleBulkDelete} disabled={isDeleting} className="flex items-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50">{isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />} Delete</button>)}
-            <button onClick={() => setSelectedIds(new Set())} className="rounded-lg p-1.5 hover:bg-white/10 dark:hover:bg-black/5 ml-1"><X size={16} /></button>
+        <div className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full border border-white/20 bg-slate-900/80 px-6 py-3 text-white shadow-2xl backdrop-blur-xl transition-all animate-in slide-in-from-bottom-8 fade-in duration-500 hover:scale-105 dark:bg-white/10 dark:border-white/10">
+            <span className="flex items-center gap-2 text-sm font-semibold tracking-wide">
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold">{selectedIds.size}</div>
+                Selected
+            </span>
+            <div className="h-5 w-px bg-white/20"></div>
+            
+            <button onClick={handleExportCSV} className="group flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-white/20 hover:shadow-lg hover:shadow-white/5">
+               <Download size={14} className="group-hover:animate-bounce" /> Export
+            </button>
+
+            {!config.readOnly && (
+              <button onClick={handleBulkDelete} disabled={isDeleting} className="group flex items-center gap-2 rounded-full bg-red-500/80 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 disabled:opacity-50">
+                 {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />} Delete
+              </button>
+            )}
+            
+            <button onClick={() => setSelectedIds(new Set())} className="ml-2 rounded-full bg-white/5 p-1.5 text-slate-300 transition-colors hover:bg-white/20 hover:text-white"><X size={14} /></button>
         </div>
       )}
     </div>

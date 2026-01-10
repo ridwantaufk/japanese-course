@@ -14,7 +14,7 @@ export default async function ResourcePage({ params, searchParams }) {
 
   // --- 1. PARSE PARAMETERS ---
   const page = parseInt(sp.page || '1');
-  const limitParam = sp.limit || '25';
+  const limitParam = sp.limit || '10';
   const limit = limitParam === 'all' ? null : parseInt(limitParam);
   const offset = limit ? (page - 1) * limit : 0;
   
