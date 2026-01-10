@@ -11,45 +11,96 @@ export async function GET(request, { params }) {
   }
 
   const { searchParams } = new URL(request.url);
+  
+  // Pagination
   const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '10');
-  const offset = (page - 1) * limit;
+  const limitParam = searchParams.get('limit') || '25';
+  const limit = limitParam === 'all' ? null : parseInt(limitParam); // null limit means All in some logic, but usually we need a big number
+  const offset = limit ? (page - 1) * limit : 0;
+
+  // Sorting
+  const sortCol = searchParams.get('sort') || config.primaryKey;
+  const sortOrder = searchParams.get('order') === 'asc' ? 'ASC' : 'DESC';
+
+  // Global Search (Generic)
   const search = searchParams.get('search') || '';
 
   try {
     let queryText = `SELECT * FROM ${config.table}`;
     let countQueryText = `SELECT COUNT(*) FROM ${config.table}`;
-    const queryParams = [];
+    
+    const conditions = [];
+    const values = [];
+    let paramCounter = 1;
 
-    // Basic search implementation
+    // 1. Specific Column Filters (Exact or Partial based on config could be better, but generic approach:)
+    // We check all query params. If a param matches a column name, we add it to WHERE
+    config.columns.forEach(col => {
+      const val = searchParams.get(col.key);
+      if (val) {
+        if (col.type === 'boolean') {
+           conditions.push(`${col.key} = $${paramCounter}`);
+           values.push(val === 'true');
+           paramCounter++;
+        } else if (col.type === 'select' || col.key === 'jlpt_level' || col.key === 'category') {
+           conditions.push(`${col.key} = $${paramCounter}`);
+           values.push(val);
+           paramCounter++;
+        } else {
+           // Default to ILIKE for text fields
+           conditions.push(`${col.key}::text ILIKE $${paramCounter}`);
+           values.push(`%${val}%`);
+           paramCounter++;
+        }
+      }
+    });
+
+    // 2. Global Search (if provided alongside specific filters, we AND it)
     if (search) {
-      // Find text columns to search
       const textColumns = config.columns
-        .map(c => c.key) // Naive approach: search in displayed columns
-        .filter(key => !['id', 'created_at'].includes(key)); // Exclude non-text likely cols
+        .filter(c => !['boolean', 'date'].includes(c.type) && c.key !== 'id')
+        .map(c => c.key);
       
       if (textColumns.length > 0) {
-        const conditions = textColumns.map((col, idx) => `${col}::text ILIKE $1`).join(' OR ');
-        queryText += ` WHERE ${conditions}`;
-        countQueryText += ` WHERE ${conditions}`;
-        queryParams.push(`%${search}%`);
+        const searchConditions = textColumns.map(col => `${col}::text ILIKE $${paramCounter}`).join(' OR ');
+        conditions.push(`(${searchConditions})`);
+        values.push(`%${search}%`);
+        paramCounter++;
       }
     }
 
-    queryText += ` ORDER BY ${config.primaryKey} DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
-    
-    const countRes = await query(countQueryText, queryParams.slice(0, 1)); // Only search param for count
-    const total = parseInt(countRes.rows[0].count);
+    // Construct WHERE clause
+    if (conditions.length > 0) {
+      const whereClause = ` WHERE ${conditions.join(' AND ')}`;
+      queryText += whereClause;
+      countQueryText += whereClause;
+    }
 
-    const dataRes = await query(queryText, [...queryParams, limit, offset]);
+    // Order By
+    // Security check: ensure sortCol is a valid column to prevent injection
+    const validCols = [...config.columns.map(c => c.key), config.primaryKey, 'created_at', 'updated_at'];
+    const safeSortCol = validCols.includes(sortCol) ? sortCol : config.primaryKey;
+    
+    queryText += ` ORDER BY ${safeSortCol} ${sortOrder}`;
+
+    // Limit & Offset
+    if (limit) {
+      queryText += ` LIMIT $${paramCounter} OFFSET $${paramCounter + 1}`;
+      values.push(limit, offset);
+    }
+
+    // Execute
+    const countRes = await query(countQueryText, values.slice(0, paramCounter - 1)); // Exclude limit/offset params for count
+    const total = parseInt(countRes.rows[0].count);
+    const dataRes = await query(queryText, values);
 
     return NextResponse.json({
       data: dataRes.rows,
       meta: {
         total,
         page,
-        limit,
-        totalPages: Math.ceil(total / limit),
+        limit: limit || total,
+        totalPages: limit ? Math.ceil(total / limit) : 1,
       }
     });
 
@@ -70,7 +121,6 @@ export async function POST(request, { params }) {
   try {
     const body = await request.json();
     
-    // Filter body to only include allowed fields
     const allowedFields = config.fields.map(f => f.key);
     const data = {};
     const keys = [];
