@@ -1,5 +1,6 @@
 import { query } from '@/lib/db';
 import KanaChart from '@/components/learning/KanaChart';
+import KanaQuizModal from '@/components/learning/KanaQuizModal';
 
 async function getKana() {
   const hiragana = (await query('SELECT * FROM hiragana ORDER BY id ASC')).rows;
@@ -19,6 +20,10 @@ export default async function KanaPage() {
         <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
           The foundation of Japanese. Click on a character to hear its pronunciation.
         </p>
+      </div>
+
+      <div className="flex justify-center">
+        <KanaQuizModal hiragana={hiragana} katakana={katakana} />
       </div>
 
       <KanaChart hiragana={hiragana} katakana={katakana} />
