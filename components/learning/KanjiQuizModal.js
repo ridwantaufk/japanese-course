@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Trophy, Check, RefreshCw, Play, Settings, Keyboard, MousePointer2, AlertCircle, ChevronRight, BookOpen, Star, Info } from 'lucide-react';
+import { X, Trophy, Check, RefreshCw, Play, Settings, Keyboard, MousePointer2, AlertCircle, ChevronRight, BookOpen, Star, Info, BrainCircuit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function KanjiQuizModal({ kanjiData, level }) {
