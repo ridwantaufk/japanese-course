@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   Timer,
@@ -44,6 +44,12 @@ export default function ExamRunner({ exam, sections }) {
     audio.onended = () => setPlayingAudio(null);
   };
 
+  const finishExam = useCallback(() => {
+    setIsFinished(true);
+    clearExamInProgress(exam.id);
+    // Submit logic here
+  }, [exam.id]);
+
   // Timer Logic
   useEffect(() => {
     if (isFinished) return;
@@ -59,12 +65,6 @@ export default function ExamRunner({ exam, sections }) {
     }, 1000);
     return () => clearInterval(timer);
   }, [isFinished, finishExam]);
-
-  const finishExam = useCallback(() => {
-    setIsFinished(true);
-    clearExamInProgress(exam.id);
-    // Submit logic here
-  }, [exam.id]);
 
   // Auto-save progress every 30 seconds
   useEffect(() => {

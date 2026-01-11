@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useMemo } from "react";
 import LevelSelector from "./LevelSelector";
-import { X, Volume2, Book, Loader2 } from "lucide-react";
+import { X, Volume2, Book, Loader2, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FuriganaText from "./FuriganaText";
+import KanjiQuizModal from "./KanjiQuizModal";
 
 export default function KanjiList({ initialData }) {
   const [level, setLevel] = useState("N5");
   const [selectedKanji, setSelectedKanji] = useState(null);
   const [examples, setExamples] = useState([]);
   const [loadingExamples, setLoadingExamples] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   // Filter Data
   const filteredData = useMemo(() => {
@@ -83,7 +85,7 @@ export default function KanjiList({ initialData }) {
 
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-6">
         <h1 className="text-4xl font-black text-slate-900 dark:text-white">
           Kanji Library
         </h1>
@@ -91,6 +93,25 @@ export default function KanjiList({ initialData }) {
           Select your JLPT level to start learning.
         </p>
         <LevelSelector currentLevel={level} onSelect={setLevel} />
+        
+        {/* Quiz Button */}
+        {filteredData.length > 0 && (
+          <div className="flex justify-center">
+             {showQuiz && (
+                <KanjiQuizModal 
+                  kanjiData={filteredData} 
+                  level={level} 
+                />
+             )}
+             <button
+               onClick={() => setShowQuiz(true)}
+               className="group relative inline-flex items-center gap-2 rounded-full bg-slate-900 px-8 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:scale-105 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+             >
+               <BrainCircuit size={18} />
+               Start {level} Quiz
+             </button>
+          </div>
+        )}
       </div>
 
       {/* Kanji Grid */}

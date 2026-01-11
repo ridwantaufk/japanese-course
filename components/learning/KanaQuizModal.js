@@ -395,7 +395,7 @@ export default function KanaQuizModal({ hiragana, katakana, vocabulary = [], sen
         </div>
 
         {/* Scrollable Content Area - Flexible Height */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-white/10 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth custom-scrollbar">
           
           {/* MENU PHASE */}
           {phase === 'menu' && (
@@ -664,8 +664,8 @@ export default function KanaQuizModal({ hiragana, katakana, vocabulary = [], sen
                     </span>
                  </div>
                  
-                 {/* Script Hint for R2K */}
-                 {questions[currentIndex].direction === 'r2k' && (
+                 {/* Script Hint for R2K - ONLY for Input Mode */}
+                 {questions[currentIndex].direction === 'r2k' && config.type === 'input' && (
                    <div className="flex justify-center gap-2 mt-2">
                       {/[ァ-ン]/.test(questions[currentIndex].answer) && (
                         <span className="px-2 py-1 rounded-md bg-orange-100 text-orange-600 text-xs font-bold dark:bg-orange-900/30 dark:text-orange-400">
