@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import { Calendar, Upload, Plus, X, Search } from "lucide-react";
 
 /**
@@ -20,7 +20,7 @@ export function DatePicker({ value, onChange, required = false }) {
         <input
           type="date"
           required={required}
-          value={value || ''}
+          value={value || ""}
           onChange={handleDateChange}
           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
         />

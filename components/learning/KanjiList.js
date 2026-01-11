@@ -25,16 +25,18 @@ export default function KanjiList({ initialData }) {
   // Fetch Examples when Kanji is selected
   useEffect(() => {
     let mounted = true;
-    
+
     const loadExamples = async () => {
       if (!selectedKanji) {
         if (mounted) setExamples([]);
         return;
       }
-      
+
       setLoadingExamples(true);
       try {
-        const res = await fetch(`/api/admin/kanji_examples?kanji_id=${selectedKanji.id}`);
+        const res = await fetch(
+          `/api/admin/kanji_examples?kanji_id=${selectedKanji.id}`
+        );
         const data = await res.json();
         if (mounted) {
           setExamples(data.data || []);
@@ -48,10 +50,12 @@ export default function KanjiList({ initialData }) {
         }
       }
     };
-    
+
     loadExamples();
-    
-    return () => { mounted = false; };
+
+    return () => {
+      mounted = false;
+    };
   }, [selectedKanji]);
 
   // Audio Logic with Fallback
