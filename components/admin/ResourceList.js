@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useReactToPrint } from "react-to-print";
 import ImportModal from "./ImportModal";
+import BatchEditModal from "./BatchEditModal";
 import { useToast } from "./ToastProvider";
 
 export default function ResourceList({ resourceKey, config, data, meta }) {
@@ -42,6 +43,7 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showBatchEdit, setShowBatchEdit] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
@@ -594,6 +596,18 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
               />{" "}
               XLSX
             </button>
+            {!config.readOnly && (
+              <button
+                onClick={() => setShowBatchEdit(true)}
+                className="group flex items-center gap-2 rounded-full px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white/10 dark:hover:bg-black/10"
+              >
+                <Edit
+                  size={14}
+                  className="group-hover:text-blue-400 transition-colors"
+                />{" "}
+                BATCH EDIT
+              </button>
+            )}
           </div>
 
           {!config.readOnly && (
@@ -627,6 +641,20 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
           onClose={() => setShowImport(false)}
           onSuccess={() => {
             setShowImport(false);
+            router.refresh();
+          }}
+        />
+      )}
+      
+      {showBatchEdit && (
+        <BatchEditModal
+          resourceKey={resourceKey}
+          config={config}
+          selectedIds={selectedIds}
+          onClose={() => setShowBatchEdit(false)}
+          onSuccess={() => {
+            setShowBatchEdit(false);
+            setSelectedIds(new Set());
             router.refresh();
           }}
         />

@@ -1,40 +1,42 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X, Save, Loader2, AlertCircle } from 'lucide-react';
-import { useToast } from './ToastProvider';
-import { validateField } from '@/lib/validators';
+import { useState } from "react";
+import { X, Save, Loader2, AlertCircle } from "lucide-react";
+import { useToast } from "./ToastProvider";
+import { validateField } from "@/lib/validators";
 
-export default function BatchEditModal({ 
-  resourceKey, 
-  config, 
-  selectedIds, 
-  onClose, 
-  onSuccess 
+export default function BatchEditModal({
+  resourceKey,
+  config,
+  selectedIds,
+  onClose,
+  onSuccess,
 }) {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
-  const [selectedField, setSelectedField] = useState('');
-  const [fieldValue, setFieldValue] = useState('');
+  const [selectedField, setSelectedField] = useState("");
+  const [fieldValue, setFieldValue] = useState("");
   const [errors, setErrors] = useState({});
 
-  const editableFields = config.fields.filter(f => 
-    !f.readOnly && f.type !== 'json' && f.key !== config.primaryKey
+  const editableFields = config.fields.filter(
+    (f) => !f.readOnly && f.type !== "json" && f.key !== config.primaryKey
   );
 
-  const selectedFieldConfig = editableFields.find(f => f.key === selectedField);
+  const selectedFieldConfig = editableFields.find(
+    (f) => f.key === selectedField
+  );
 
   const handleFieldChange = (field) => {
     setSelectedField(field);
-    setFieldValue('');
+    setFieldValue("");
     setErrors({});
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedField) {
-      toast.error('Please select a field to edit');
+      toast.error("Please select a field to edit");
       return;
     }
 
@@ -42,7 +44,7 @@ export default function BatchEditModal({
     const validation = validateField(selectedFieldConfig, fieldValue);
     if (!validation.valid) {
       setErrors({ [selectedField]: validation.error });
-      toast.error('Invalid value');
+      toast.error("Invalid value");
       return;
     }
 
@@ -56,16 +58,16 @@ export default function BatchEditModal({
 
       for (const id of selectedIds) {
         const promise = fetch(`/api/admin/${resourceKey}/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ [selectedField]: fieldValue }),
         })
-          .then(res => {
+          .then((res) => {
             if (res.ok) successCount++;
             else failCount++;
           })
           .catch(() => failCount++);
-        
+
         updatePromises.push(promise);
       }
 
@@ -80,20 +82,19 @@ export default function BatchEditModal({
 
       onSuccess();
       onClose();
-      
     } catch (error) {
-      toast.error('Batch update failed: ' + error.message);
+      toast.error("Batch update failed: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-2xl animate-in fade-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
       >
@@ -129,7 +130,7 @@ export default function BatchEditModal({
               className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
             >
               <option value="">Choose a field...</option>
-              {editableFields.map(field => (
+              {editableFields.map((field) => (
                 <option key={field.key} value={field.key}>
                   {field.label}
                 </option>
@@ -156,10 +157,16 @@ export default function BatchEditModal({
           {/* Warning */}
           <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle size={20} className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+              <AlertCircle
+                size={20}
+                className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+              />
               <div className="text-sm text-amber-700 dark:text-amber-300">
                 <p className="font-semibold mb-1">Warning</p>
-                <p>This will update <strong>{selectedIds.size} record(s)</strong>. This action cannot be undone.</p>
+                <p>
+                  This will update <strong>{selectedIds.size} record(s)</strong>
+                  . This action cannot be undone.
+                </p>
               </div>
             </div>
           </div>
@@ -190,45 +197,46 @@ export default function BatchEditModal({
 }
 
 function renderInput(field, value, onChange) {
-  const commonClasses = "w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all";
+  const commonClasses =
+    "w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all";
 
   switch (field?.type) {
-    case 'textarea':
+    case "textarea":
       return (
         <textarea
           required
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           rows={4}
           className={commonClasses}
           placeholder={`Enter ${field.label}...`}
         />
       );
-    
-    case 'select':
+
+    case "select":
       return (
         <select
           required
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           className={commonClasses}
         >
           <option value="">Select...</option>
-          {field.options?.map(opt => (
+          {field.options?.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
           ))}
         </select>
       );
-    
-    case 'number':
+
+    case "number":
       return (
         <input
           type="number"
           required
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           className={commonClasses}
           placeholder={`Enter ${field.label}...`}
           min={field.min}
@@ -236,13 +244,13 @@ function renderInput(field, value, onChange) {
           step={field.step || 1}
         />
       );
-    
-    case 'boolean':
+
+    case "boolean":
       return (
         <select
           required
           value={value}
-          onChange={e => onChange(e.target.value === 'true')}
+          onChange={(e) => onChange(e.target.value === "true")}
           className={commonClasses}
         >
           <option value="">Select...</option>
@@ -250,27 +258,27 @@ function renderInput(field, value, onChange) {
           <option value="false">False</option>
         </select>
       );
-    
-    case 'date':
+
+    case "date":
       return (
         <input
           type="date"
           required
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           className={commonClasses}
         />
       );
-    
+
     default:
       return (
         <input
           type="text"
           required
           value={value}
-          onChange={e => onChange(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
           className={commonClasses}
-          placeholder={`Enter ${field?.label || 'value'}...`}
+          placeholder={`Enter ${field?.label || "value"}...`}
         />
       );
   }

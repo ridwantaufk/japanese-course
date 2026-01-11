@@ -1,14 +1,12 @@
-import Sidebar from '@/components/admin/Sidebar';
-import { ToastProvider } from '@/components/admin/ToastProvider';
+import Sidebar from "@/components/admin/Sidebar";
+import { ToastProvider } from "@/components/admin/ToastProvider";
 
 export default function AdminLayout({ children }) {
   return (
     <ToastProvider>
       <div className="flex h-screen overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-500">
-        
         {/* --- PREMIUM BACKGROUNDS (FIXED) --- */}
         <div className="fixed inset-0 z-[-1] pointer-events-none transition-all duration-700 bg-gray-50 dark:bg-[#020617]">
-          
           {/* LIGHT MODE: Porcelain Gradient */}
           <div className="absolute inset-0 opacity-100 dark:opacity-0 transition-opacity duration-700">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-indigo-50/80 via-white to-white"></div>
@@ -23,7 +21,7 @@ export default function AdminLayout({ children }) {
         </div>
 
         <Sidebar />
-        
+
         <main className="relative z-10 flex-1 overflow-y-auto p-4 sm:p-8 scroll-smooth custom-scrollbar">
           {/* Content Container */}
           <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-700">

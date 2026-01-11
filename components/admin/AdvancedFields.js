@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Calendar, Upload, Plus, X, Search } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Calendar, Upload, Plus, X, Search } from "lucide-react";
 
 /**
  * DatePicker Component - Advanced date input with calendar UI
  */
 export function DatePicker({ value, onChange, required = false }) {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [localValue, setLocalValue] = useState(value || '');
+  const [localValue, setLocalValue] = useState(value || "");
 
   useEffect(() => {
-    setLocalValue(value || '');
+    setLocalValue(value || "");
   }, [value]);
 
   const handleDateChange = (e) => {
@@ -30,8 +30,8 @@ export function DatePicker({ value, onChange, required = false }) {
           onChange={handleDateChange}
           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
         />
-        <Calendar 
-          size={18} 
+        <Calendar
+          size={18}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
         />
       </div>
@@ -42,7 +42,12 @@ export function DatePicker({ value, onChange, required = false }) {
 /**
  * FilePicker Component - File upload with preview
  */
-export function FilePicker({ value, onChange, accept = 'image/*', required = false }) {
+export function FilePicker({
+  value,
+  onChange,
+  accept = "image/*",
+  required = false,
+}) {
   const [preview, setPreview] = useState(value || null);
 
   const handleFileChange = (e) => {
@@ -68,21 +73,25 @@ export function FilePicker({ value, onChange, accept = 'image/*', required = fal
       <label className="flex h-32 cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-white/10">
         <Upload size={32} className="text-indigo-500" />
         <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-          {preview ? 'Change File' : 'Upload File'}
+          {preview ? "Change File" : "Upload File"}
         </span>
-        <input 
-          type="file" 
+        <input
+          type="file"
           accept={accept}
           required={required && !preview}
-          className="hidden" 
-          onChange={handleFileChange} 
+          className="hidden"
+          onChange={handleFileChange}
         />
       </label>
-      
+
       {preview && (
         <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
-          {preview.startsWith('data:image') ? (
-            <img src={preview} alt="Preview" className="w-full h-40 object-cover" />
+          {preview.startsWith("data:image") ? (
+            <img
+              src={preview}
+              alt="Preview"
+              className="w-full h-40 object-cover"
+            />
           ) : (
             <div className="flex items-center justify-center h-40 bg-slate-100 dark:bg-black/20 text-slate-400">
               File uploaded
@@ -104,16 +113,16 @@ export function FilePicker({ value, onChange, accept = 'image/*', required = fal
 /**
  * RelationshipPicker Component - Foreign key selector with search
  */
-export function RelationshipPicker({ 
-  value, 
-  onChange, 
-  resourceKey, 
-  displayField = 'name',
-  required = false 
+export function RelationshipPicker({
+  value,
+  onChange,
+  resourceKey,
+  displayField = "name",
+  required = false,
 }) {
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
@@ -124,36 +133,39 @@ export function RelationshipPicker({
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        limit: '50',
-        ...(searchQuery && { search: searchQuery })
+        limit: "50",
+        ...(searchQuery && { search: searchQuery }),
       });
-      
+
       const res = await fetch(`/api/admin/${resourceKey}?${params}`);
       const json = await res.json();
       setOptions(json.data || []);
     } catch (e) {
-      console.error('Failed to load options:', e);
+      console.error("Failed to load options:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedOption = options.find(opt => opt.id === value);
+  const selectedOption = options.find((opt) => opt.id === value);
 
   return (
     <div className="relative">
-      <div 
+      <div
         onClick={() => setShowDropdown(!showDropdown)}
         className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 text-sm text-slate-900 dark:text-white cursor-pointer hover:border-indigo-500 transition-all"
       >
-        {selectedOption ? selectedOption[displayField] : 'Select...'}
+        {selectedOption ? selectedOption[displayField] : "Select..."}
       </div>
-      
+
       {showDropdown && (
         <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 shadow-xl">
           <div className="p-2 border-b border-slate-200 dark:border-white/10">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
               <input
                 type="text"
                 placeholder="Search..."
@@ -163,14 +175,18 @@ export function RelationshipPicker({
               />
             </div>
           </div>
-          
+
           <div className="max-h-60 overflow-y-auto p-2">
             {loading ? (
-              <div className="text-center py-4 text-slate-400 text-sm">Loading...</div>
+              <div className="text-center py-4 text-slate-400 text-sm">
+                Loading...
+              </div>
             ) : options.length === 0 ? (
-              <div className="text-center py-4 text-slate-400 text-sm">No options found</div>
+              <div className="text-center py-4 text-slate-400 text-sm">
+                No options found
+              </div>
             ) : (
-              options.map(opt => (
+              options.map((opt) => (
                 <button
                   key={opt.id}
                   type="button"
@@ -187,12 +203,8 @@ export function RelationshipPicker({
           </div>
         </div>
       )}
-      
-      <input 
-        type="hidden" 
-        required={required && !value}
-        value={value || ''} 
-      />
+
+      <input type="hidden" required={required && !value} value={value || ""} />
     </div>
   );
 }
@@ -200,11 +212,16 @@ export function RelationshipPicker({
 /**
  * ArrayEditor Component - Manage array/list fields
  */
-export function ArrayEditor({ value, onChange, placeholder = 'Add item...', required = false }) {
+export function ArrayEditor({
+  value,
+  onChange,
+  placeholder = "Add item...",
+  required = false,
+}) {
   const [items, setItems] = useState(
-    Array.isArray(value) ? value : (value ? [value] : [])
+    Array.isArray(value) ? value : value ? [value] : []
   );
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     onChange(items);
@@ -213,7 +230,7 @@ export function ArrayEditor({ value, onChange, placeholder = 'Add item...', requ
   const handleAdd = () => {
     if (!inputValue.trim()) return;
     setItems([...items, inputValue.trim()]);
-    setInputValue('');
+    setInputValue("");
   };
 
   const handleRemove = (index) => {
@@ -221,7 +238,7 @@ export function ArrayEditor({ value, onChange, placeholder = 'Add item...', requ
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAdd();
     }
@@ -246,7 +263,7 @@ export function ArrayEditor({ value, onChange, placeholder = 'Add item...', requ
           <Plus size={18} />
         </button>
       </div>
-      
+
       {items.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {items.map((item, index) => (
@@ -266,11 +283,11 @@ export function ArrayEditor({ value, onChange, placeholder = 'Add item...', requ
           ))}
         </div>
       )}
-      
-      <input 
-        type="hidden" 
+
+      <input
+        type="hidden"
         required={required && items.length === 0}
-        value={JSON.stringify(items)} 
+        value={JSON.stringify(items)}
       />
     </div>
   );
@@ -279,11 +296,20 @@ export function ArrayEditor({ value, onChange, placeholder = 'Add item...', requ
 /**
  * TagInput Component - Similar to ArrayEditor but optimized for tags
  */
-export function TagInput({ value, onChange, suggestions = [], required = false }) {
+export function TagInput({
+  value,
+  onChange,
+  suggestions = [],
+  required = false,
+}) {
   const [tags, setTags] = useState(
-    Array.isArray(value) ? value : (value ? value.split(',').map(t => t.trim()) : [])
+    Array.isArray(value)
+      ? value
+      : value
+      ? value.split(",").map((t) => t.trim())
+      : []
   );
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
@@ -291,21 +317,22 @@ export function TagInput({ value, onChange, suggestions = [], required = false }
   }, [tags]);
 
   const filteredSuggestions = suggestions.filter(
-    s => s.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(s)
+    (s) =>
+      s.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(s)
   );
 
   const handleAdd = (tag) => {
     if (!tag.trim() || tags.includes(tag.trim())) return;
     setTags([...tags, tag.trim()]);
-    setInputValue('');
+    setInputValue("");
     setShowSuggestions(false);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       handleAdd(inputValue);
-    } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
+    } else if (e.key === "Backspace" && !inputValue && tags.length > 0) {
       setTags(tags.slice(0, -1));
     }
   };
@@ -342,7 +369,7 @@ export function TagInput({ value, onChange, suggestions = [], required = false }
             className="flex-1 min-w-[120px] bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white"
           />
         </div>
-        
+
         {showSuggestions && filteredSuggestions.length > 0 && (
           <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 shadow-xl p-2 max-h-40 overflow-y-auto">
             {filteredSuggestions.map((suggestion, index) => (
@@ -358,11 +385,11 @@ export function TagInput({ value, onChange, suggestions = [], required = false }
           </div>
         )}
       </div>
-      
-      <input 
-        type="hidden" 
+
+      <input
+        type="hidden"
         required={required && tags.length === 0}
-        value={JSON.stringify(tags)} 
+        value={JSON.stringify(tags)}
       />
     </div>
   );
