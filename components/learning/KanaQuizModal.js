@@ -199,6 +199,18 @@ export default function KanaQuizModal({
     }
   }, [phase, config?.timeLimit, timeLeft]);
 
+  // Scroll lock when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   // ===== QUESTION GENERATION =====
   const generateQuestions = (cfg) => {
     let pool = [];
