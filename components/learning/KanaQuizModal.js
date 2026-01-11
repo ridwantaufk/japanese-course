@@ -1,392 +1,636 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Trophy, Check, RefreshCw, Play, Settings, Keyboard, MousePointer2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  X,
+  Trophy,
+  Check,
+  RefreshCw,
+  Play,
+  Zap,
+  Brain,
+  Target,
+  Sparkles,
+  Clock,
+  MousePointer2,
+  Move,
+  Link2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export default function KanaQuizModal({ hiragana, katakana, vocabulary = [], sentences = [] }) {
+// ===== PRESET QUIZ MODES =====
+const QUIZ_PRESETS = [
+  {
+    id: "quick-hiragana",
+    icon: Zap,
+    title: "Quick Hiragana",
+    subtitle: "10 questions • Multiple Choice",
+    color: "blue",
+    config: {
+      mode: "hiragana",
+      type: "choice",
+      direction: "k2r",
+      count: 10,
+      source: "chars",
+      timeLimit: null,
+    },
+  },
+  {
+    id: "quick-katakana",
+    icon: Zap,
+    title: "Quick Katakana",
+    subtitle: "10 questions • Multiple Choice",
+    color: "orange",
+    config: {
+      mode: "katakana",
+      type: "choice",
+      direction: "k2r",
+      count: 10,
+      source: "chars",
+      timeLimit: null,
+    },
+  },
+  {
+    id: "mixed-power",
+    icon: Target,
+    title: "Mixed Challenge",
+    subtitle: "20 questions • Both Scripts",
+    color: "purple",
+    config: {
+      mode: "mixed",
+      type: "choice",
+      direction: "random",
+      count: 20,
+      source: "chars",
+      timeLimit: null,
+    },
+  },
+  {
+    id: "word-practice",
+    icon: Brain,
+    title: "Word Practice",
+    subtitle: "15 real words • Mixed",
+    color: "teal",
+    config: {
+      mode: "mixed",
+      type: "choice",
+      direction: "random",
+      count: 15,
+      source: "vocab",
+      timeLimit: null,
+    },
+  },
+  {
+    id: "speed-drill",
+    icon: Clock,
+    title: "Speed Drill",
+    subtitle: "50 questions • Timed",
+    color: "red",
+    config: {
+      mode: "mixed",
+      type: "choice",
+      direction: "random",
+      count: 50,
+      source: "chars",
+      timeLimit: 300, // 5 minutes
+    },
+  },
+  {
+    id: "sentence-master",
+    icon: Sparkles,
+    title: "Sentence Master",
+    subtitle: "10 sentences • Advanced",
+    color: "pink",
+    config: {
+      mode: "mixed",
+      type: "choice",
+      direction: "k2r",
+      count: 10,
+      source: "sentences",
+      timeLimit: null,
+    },
+  },
+  {
+    id: "drag-drop-fun",
+    icon: Move,
+    title: "Drag & Drop",
+    subtitle: "10 questions • Interactive",
+    color: "green",
+    config: {
+      mode: "mixed",
+      type: "drag",
+      direction: "k2r",
+      count: 10,
+      source: "chars",
+      timeLimit: null,
+    },
+  },
+  {
+    id: "match-pairs",
+    icon: Link2,
+    title: "Match Pairs",
+    subtitle: "8 pairs • Connect",
+    color: "indigo",
+    config: {
+      mode: "mixed",
+      type: "match",
+      direction: "k2r",
+      count: 8,
+      source: "chars",
+      timeLimit: null,
+    },
+  },
+];
+
+export default function KanaQuizModal({
+  hiragana,
+  katakana,
+  vocabulary = [],
+  sentences = [],
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [phase, setPhase] = useState('menu'); // menu, config, game, result
-  
-  // Ensure we are on client to access document.body
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Configuration
-  const [config, setConfig] = useState({
-    mode: 'mixed', // hiragana, katakana, mixed
-    type: 'choice', // choice, input
-    direction: 'random', // k2r (Kana->Romaji), r2k (Romaji->Kana), random
-    count: 10,
-    length: 1, // 1=Char, 2-4=Word, 5-8=Sentence
-    source: 'random', // random, database (only if length > 1)
-    sentenceDifficulty: 'all', // all, short, medium, long, very_long
-    autoAdvance: false // true = auto next, false = manual next
-  });
-
-  const [customCount, setCustomCount] = useState(10);
+  const [phase, setPhase] = useState("menu"); // menu, game, result
+  const [config, setConfig] = useState(null);
 
   // Game State
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null); // For Choice
-  const [inputAnswer, setInputAnswer] = useState(''); // For Input
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [feedback, setFeedback] = useState(null); // correct, close, incorrect
-  const [diffResult, setDiffResult] = useState([]); // Array of {char, status}
+  const [feedback, setFeedback] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(null);
 
-  const inputRef = useRef(null);
-  const nextButtonRef = useRef(null); // Ref for auto-focusing next button
+  // Drag & Drop State
+  const [dragItems, setDragItems] = useState([]);
+  const [droppedItem, setDroppedItem] = useState(null);
+  const [dragOverSlot, setDragOverSlot] = useState(false);
 
-  // Focus input when moving to next question in input mode
+  // Match State
+  const [matchPairs, setMatchPairs] = useState({ left: [], right: [] });
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [wrongAttempts, setWrongAttempts] = useState([]);
+
+  const nextButtonRef = useRef(null);
+
   useEffect(() => {
-    if (phase === 'game' && !isAnswered) {
-       // Focus input if typing mode
-       if (config.type === 'input' && inputRef.current) {
-         inputRef.current.focus();
-       }
-    } else if (phase === 'game' && isAnswered && !config.autoAdvance) {
-       // Focus next button if manual mode answered
-       if (nextButtonRef.current) {
-         nextButtonRef.current.focus();
-       }
+    setMounted(true);
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    if (phase === "game" && config?.timeLimit && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setPhase("result");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
     }
-  }, [currentIndex, phase, config.type, isAnswered, config.autoAdvance]);
+  }, [phase, config?.timeLimit, timeLeft]);
 
-  // --- UTILS: LEVENSHTEIN DISTANCE & DIFF ---
-  const calculateLevenshtein = (a, b) => {
-    const matrix = [];
-    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
-    for (let i = 1; i <= b.length; i++) {
-      for (let j = 1; j <= a.length; j++) {
-        if (b.charAt(i - 1) === a.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1, // substitution
-            Math.min(
-              matrix[i][j - 1] + 1, // insertion
-              matrix[i - 1][j] + 1  // deletion
-            )
-          );
-        }
-      }
-    }
-    return matrix[b.length][a.length];
-  };
-
-  const generateDiff = (user, correct) => {
-    if (!correct) return [{ char: 'Error: No answer data', status: 'missing' }];
-
-    const result = [];
-    const maxLength = Math.max(user.length, correct.length);
-    
-    for(let i=0; i<maxLength; i++) {
-        const u = user[i] || '';
-        const c = correct[i] || '';
-        
-        if (c === '') continue; 
-
-        if (u === c) {
-            result.push({ char: c, status: 'correct' });
-        } else {
-            result.push({ char: c, status: 'missing', userChar: u });
-        }
-    }
-    return result;
-  };
-
+  // ===== QUESTION GENERATION =====
   const generateQuestions = (cfg) => {
-    let charPool = [];
-    if (cfg.mode === 'hiragana' || cfg.mode === 'mixed') charPool = [...charPool, ...hiragana];
-    if (cfg.mode === 'katakana' || cfg.mode === 'mixed') charPool = [...charPool, ...katakana];
-    
-    const shuffledPool = [...charPool].sort(() => Math.random() - 0.5);
-    
+    let pool = [];
+
+    // Build character pool
+    if (cfg.mode === "hiragana" || cfg.mode === "mixed")
+      pool = [...pool, ...hiragana];
+    if (cfg.mode === "katakana" || cfg.mode === "mixed")
+      pool = [...pool, ...katakana];
+
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const finalQuestions = [];
-    
+
     for (let i = 0; i < cfg.count; i++) {
-      let targets = [];
-      let questionText = '';
-      let answerText = '';
-      let meaning = '';
+      let questionText = "";
+      let answerText = "";
+      let meaning = "";
+      let distractors = [];
 
-      let dir = cfg.direction;
-      if (dir === 'random') dir = Math.random() > 0.5 ? 'k2r' : 'r2k';
+      const dir =
+        cfg.direction === "random"
+          ? Math.random() > 0.5
+            ? "k2r"
+            : "r2k"
+          : cfg.direction;
 
-      // --- GENERATION LOGIC ---
-      if (cfg.source === 'sentences' && sentences.length > 0) {
-        let sentencePool = [...sentences];
-        
-        if (cfg.sentenceDifficulty !== 'all') {
-          sentencePool = sentencePool.filter(s => s.difficulty === cfg.sentenceDifficulty);
-        }
+      if (cfg.source === "sentences" && sentences.length > 0) {
+        const sentence =
+          sentences[Math.floor(Math.random() * sentences.length)];
+        questionText = dir === "k2r" ? sentence.sentence : sentence.romaji;
+        answerText = dir === "k2r" ? sentence.romaji : sentence.sentence;
+        meaning = sentence.meaning_en || sentence.meaning_id;
 
-        if (cfg.mode !== 'mixed') {
-           const typeFiltered = sentencePool.filter(s => s.type === cfg.mode);
-           if (typeFiltered.length > 0) {
-             sentencePool = typeFiltered;
-           } else {
-             const mixedBackup = sentencePool.filter(s => s.type === 'mixed');
-             if (mixedBackup.length > 0) sentencePool = mixedBackup;
-           }
-        }
-        
-        if (sentencePool.length === 0) sentencePool = sentences; 
-        
-        const sentence = sentencePool[Math.floor(Math.random() * sentencePool.length)];
-        
-        questionText = dir === 'k2r' ? sentence.sentence : sentence.romaji;
-        answerText = dir === 'k2r' ? sentence.romaji : sentence.sentence;
-        meaning = sentence.meaning_id || sentence.meaning_en;
+        // Generate distractors from other sentences
+        const otherSentences = sentences
+          .filter((s) => s.id !== sentence.id)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+        distractors = otherSentences.map((s) =>
+          dir === "k2r" ? s.romaji : s.sentence
+        );
+      } else if (cfg.source === "vocab" && vocabulary.length > 0) {
+        const vocab = vocabulary[i % vocabulary.length];
+        const kanaText =
+          cfg.mode === "katakana" && vocab.katakana
+            ? vocab.katakana
+            : vocab.hiragana || vocab.word;
 
-      } else if (cfg.source === 'database' && cfg.length !== 1 && vocabulary.length > 0) {
-        const shuffledVocab = [...vocabulary].sort(() => Math.random() - 0.5);
-        const vocab = shuffledVocab[i % shuffledVocab.length];
-        
-        const kanaText = (cfg.mode === 'katakana' && vocab.katakana) ? vocab.katakana : (vocab.hiragana || vocab.word);
-        
-        questionText = dir === 'k2r' ? kanaText : vocab.romaji;
-        answerText = dir === 'k2r' ? vocab.romaji : kanaText;
-        meaning = vocab.meaning_id || vocab.meaning_en;
+        questionText = dir === "k2r" ? kanaText : vocab.romaji;
+        answerText = dir === "k2r" ? vocab.romaji : kanaText;
+        meaning = vocab.meaning_en || vocab.meaning_id;
 
+        // Generate distractors from other vocab
+        const otherVocab = vocabulary
+          .filter((v) => v.id !== vocab.id)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+        distractors = otherVocab.map((v) => {
+          const vKana =
+            cfg.mode === "katakana" && v.katakana
+              ? v.katakana
+              : v.hiragana || v.word;
+          return dir === "k2r" ? v.romaji : vKana;
+        });
       } else {
-        const chunkLength = cfg.length === 1 ? 1 : Math.floor(Math.random() * (cfg.length === 'word' ? 3 : 5)) + 2; 
-        
-        for (let j = 0; j < (cfg.length === 1 ? 1 : chunkLength); j++) {
-           const randomChar = shuffledPool[Math.floor(Math.random() * shuffledPool.length)];
-           targets.push(randomChar);
-        }
+        // Single character
+        const char = shuffled[i % shuffled.length];
+        questionText = dir === "k2r" ? char.character : char.romaji;
+        answerText = dir === "k2r" ? char.romaji : char.character;
 
-        const qRaw = targets.map(t => t.character).join('');
-        const aRaw = targets.map(t => t.romaji).join('');
-        
-        questionText = dir === 'k2r' ? qRaw : aRaw;
-        answerText = dir === 'k2r' ? aRaw : qRaw;
+        // Generate 3 random distractors
+        const otherChars = shuffled
+          .filter((c) => c.id !== char.id)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+        distractors = otherChars.map((c) =>
+          dir === "k2r" ? c.romaji : c.character
+        );
       }
 
-      // Options generation
-      let options = [];
-      if (cfg.type === 'choice') {
-        const correctOpt = { id: 'correct', label: answerText };
-        const dists = [];
-        let attempts = 0;
-        
-        while(dists.length < 3 && attempts < 50) {
-           attempts++;
-           let dLabel = '';
-           
-           if (cfg.source === 'sentences') {
-             const randomS = sentences[Math.floor(Math.random() * sentences.length)];
-             dLabel = dir === 'k2r' ? randomS.romaji : randomS.sentence;
-           } else if (cfg.source === 'database') {
-             const randomV = vocabulary[Math.floor(Math.random() * vocabulary.length)];
-             const dKana = (cfg.mode === 'katakana' && randomV.katakana) ? randomV.katakana : (randomV.hiragana || randomV.word);
-             dLabel = dir === 'k2r' ? randomV.romaji : dKana;
-           } else {
-             const dTargets = [];
-             const len = answerText.length;
-             for (let k = 0; k < len; k++) dTargets.push(shuffledPool[Math.floor(Math.random() * shuffledPool.length)]);
-             const dQ = dTargets.map(t => t.character).join('');
-             const dA = dTargets.map(t => t.romaji).join('');
-             dLabel = dir === 'k2r' ? dA : dQ;
-           }
-           
-           if (dLabel !== correctOpt.label && !dists.find(d => d.label === dLabel)) {
-             dists.push({ id: `dist_${dists.length}`, label: dLabel });
-           }
-        }
-        options = [correctOpt, ...dists].sort(() => Math.random() - 0.5);
-      }
+      // Create options for choice/drag modes
+      const options = [answerText, ...distractors.slice(0, 3)]
+        .filter((v, i, a) => a.indexOf(v) === i) // Remove duplicates
+        .sort(() => Math.random() - 0.5)
+        .map((label, idx) => ({ id: `opt_${idx}`, label }));
 
       finalQuestions.push({
+        id: `q_${i}`,
         display: questionText,
         answer: answerText,
-        meaning: meaning,
+        meaning,
         direction: dir,
-        options
+        options,
       });
     }
 
     return finalQuestions;
   };
 
-  const startQuickGame = () => {
-    const quickConfig = { mode: 'mixed', type: 'choice', direction: 'random', count: 10, length: 1, source: 'random', autoAdvance: false };
-    setConfig(quickConfig);
-    setQuestions(generateQuestions(quickConfig));
+  // ===== START QUIZ =====
+  const startQuiz = (preset) => {
+    const cfg = preset.config;
+    setConfig(cfg);
+
+    if (cfg.type === "match") {
+      // Generate match pairs (special handling)
+      generateMatchPairs(cfg);
+    } else {
+      setQuestions(generateQuestions(cfg));
+    }
+
     resetGameState();
-    setPhase('game');
+
+    if (cfg.timeLimit) {
+      setTimeLeft(cfg.timeLimit);
+      setStartTime(Date.now());
+    }
+
+    setPhase("game");
   };
 
-  const startCustomGame = () => {
-    const finalCount = parseInt(customCount) || 10;
-    const finalConfig = { ...config, count: finalCount };
-    setQuestions(generateQuestions(finalConfig));
-    resetGameState();
-    setPhase('game');
+  // ===== MATCH PAIRS GENERATION =====
+  const generateMatchPairs = (cfg) => {
+    let pool = [];
+    if (cfg.mode === "hiragana" || cfg.mode === "mixed")
+      pool = [...pool, ...hiragana];
+    if (cfg.mode === "katakana" || cfg.mode === "mixed")
+      pool = [...pool, ...katakana];
+
+    const selected = [...pool]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, cfg.count);
+
+    const left = selected.map((char, idx) => ({
+      id: `left_${idx}`,
+      text: char.character,
+      matchId: idx,
+    }));
+
+    const right = selected
+      .map((char, idx) => ({
+        id: `right_${idx}`,
+        text: char.romaji,
+        matchId: idx,
+      }))
+      .sort(() => Math.random() - 0.5); // Shuffle right side
+
+    setMatchPairs({ left, right });
   };
 
+  // ===== DRAG & DROP SETUP =====
+  const setupDragDrop = () => {
+    if (!questions[currentIndex]) return;
+    const q = questions[currentIndex];
+    setDragItems([...q.options].sort(() => Math.random() - 0.5));
+    setDroppedItem(null);
+    setDragOverSlot(false);
+  };
+
+  useEffect(() => {
+    if (
+      phase === "game" &&
+      config?.type === "drag" &&
+      questions[currentIndex]
+    ) {
+      setupDragDrop();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, phase, config?.type, questions]);
+
+  // ===== RESET GAME STATE =====
   const resetGameState = () => {
     setCurrentIndex(0);
     setScore(0);
     setIsAnswered(false);
     setSelectedAnswer(null);
-    setInputAnswer('');
     setFeedback(null);
-    setDiffResult([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setMatchedPairs([]);
+    setWrongAttempts([]);
   };
 
+  // ===== ANSWER HANDLERS =====
   const handleChoiceAnswer = (optionLabel) => {
     if (isAnswered) return;
     setIsAnswered(true);
-    
+
     const currentQ = questions[currentIndex];
     const isCorrect = optionLabel === currentQ.answer;
 
     if (isCorrect) {
-        setScore(s => s + 1);
-        setFeedback('correct');
+      setScore((s) => s + 1);
+      setFeedback("correct");
     } else {
-        setFeedback('incorrect');
+      setFeedback("incorrect");
     }
-    setSelectedAnswer(optionLabel); 
+    setSelectedAnswer(optionLabel);
 
-    if (config.autoAdvance) {
-       setTimeout(() => nextQuestion(), 1500);
-    }
+    setTimeout(() => {
+      if (currentIndex < questions.length - 1) {
+        nextQuestion();
+      } else {
+        setPhase("result");
+      }
+    }, 1500);
   };
 
-  const handleInputSubmit = (e) => {
+  const handleDragStart = (e, item) => {
+    e.dataTransfer.setData("text/plain", JSON.stringify(item));
+  };
+
+  const handleDragOver = (e) => {
     e.preventDefault();
+    setDragOverSlot(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSlot(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOverSlot(false);
+
     if (isAnswered) return;
-    
-    const currentQ = questions[currentIndex];
-    const userVal = inputAnswer.trim();
 
-    if (!userVal) return;
-
-    const correctVal = currentQ.answer;
-    
-    const normalize = (str) => {
-      let s = str.toLowerCase();
-      // Handle Macrons (Hepburn -> Waapuro)
-      s = s.replace(/ā/g, 'aa')
-           .replace(/ī/g, 'ii')
-           .replace(/ū/g, 'uu')
-           .replace(/ē/g, 'ee')
-           .replace(/ō/g, 'ou'); // Most common mapping (Tōkyō -> Toukyou)
-      
-      // Remove punctuation, spaces, and hyphens
-      return s.replace(/[.,?!、。？！\s\u3000\-]/g, '');
-    };
-    
-    const toHiragana = (str) => {
-      return str.replace(/[\u30a1-\u30f6]/g, function(match) {
-        var chr = match.charCodeAt(0) - 0x60;
-        return String.fromCharCode(chr);
-      });
-    };
-
-    const cleanUser = normalize(userVal);
-    const cleanCorrect = normalize(correctVal);
-    const cleanCorrectHiragana = toHiragana(cleanCorrect);
-
-    // 1. Exact Match Check
-    let isExactMatch = (cleanUser === cleanCorrect) || (cleanUser === cleanCorrectHiragana);
-
-    // 1b. Special tolerance for 'ou' vs 'oo' (e.g. Arigatou vs Arigatoo)
-    if (!isExactMatch) {
-       const userOO = cleanUser.replace(/ou/g, 'oo');
-       const correctOO = cleanCorrect.replace(/ou/g, 'oo');
-       if (userOO === correctOO) isExactMatch = true;
-    }
-
-    const distance = calculateLevenshtein(cleanUser, cleanCorrect);
-    const maxLength = Math.max(cleanUser.length, cleanCorrect.length);
-    const similarity = 1 - (distance / maxLength); 
-
-    let resultStatus = 'incorrect';
-    
-    if (isExactMatch || similarity === 1) {
-        resultStatus = 'correct';
-        setScore(s => s + 1);
-    } else if (similarity > 0.8) {
-        resultStatus = 'close';
-        setScore(s => s + 1); 
-    } else {
-        resultStatus = 'incorrect';
-    }
-
-    setDiffResult(generateDiff(userVal, correctVal)); 
-
+    const item = JSON.parse(e.dataTransfer.getData("text/plain"));
+    setDroppedItem(item);
     setIsAnswered(true);
-    setFeedback(resultStatus);
 
-    if (config.autoAdvance) {
-        const delay = resultStatus === 'correct' ? 1500 : 4000;
-        setTimeout(() => nextQuestion(), delay);
+    const currentQ = questions[currentIndex];
+    const isCorrect = item.label === currentQ.answer;
+
+    if (isCorrect) {
+      setScore((s) => s + 1);
+      setFeedback("correct");
+    } else {
+      setFeedback("incorrect");
+    }
+
+    setTimeout(() => {
+      if (currentIndex < questions.length - 1) {
+        nextQuestion();
+      } else {
+        setPhase("result");
+      }
+    }, 1500);
+  };
+
+  const handleMatchClick = (side, item) => {
+    if (matchedPairs.some((p) => p.leftId === item.id || p.rightId === item.id))
+      return;
+
+    if (side === "left") {
+      if (selectedLeft?.id === item.id) {
+        setSelectedLeft(null);
+      } else {
+        setSelectedLeft(item);
+        if (selectedRight) {
+          checkMatch(item, selectedRight);
+        }
+      }
+    } else {
+      if (selectedRight?.id === item.id) {
+        setSelectedRight(null);
+      } else {
+        setSelectedRight(item);
+        if (selectedLeft) {
+          checkMatch(selectedLeft, item);
+        }
+      }
     }
   };
 
-  const nextQuestion = (e) => {
-    if (e && e.preventDefault) e.preventDefault();
+  const checkMatch = (leftItem, rightItem) => {
+    if (leftItem.matchId === rightItem.matchId) {
+      // Correct match!
+      setMatchedPairs((prev) => [
+        ...prev,
+        { leftId: leftItem.id, rightId: rightItem.id },
+      ]);
+      setScore((s) => s + 1);
+      setSelectedLeft(null);
+      setSelectedRight(null);
+
+      // Check if all matched
+      if (matchedPairs.length + 1 === matchPairs.left.length) {
+        setTimeout(() => setPhase("result"), 1000);
+      }
+    } else {
+      // Wrong match
+      setWrongAttempts((prev) => [
+        ...prev,
+        { leftId: leftItem.id, rightId: rightItem.id },
+      ]);
+      setTimeout(() => {
+        setWrongAttempts([]);
+        setSelectedLeft(null);
+        setSelectedRight(null);
+      }, 800);
+    }
+  };
+
+  const nextQuestion = () => {
     if (currentIndex < questions.length - 1) {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
       setIsAnswered(false);
       setSelectedAnswer(null);
-      setInputAnswer('');
       setFeedback(null);
-      setDiffResult([]);
     } else {
-      setPhase('result');
+      setPhase("result");
     }
   };
 
   const resetToMenu = () => {
     setIsOpen(false);
-    setPhase('menu');
+    setPhase("menu");
+    setConfig(null);
   };
 
-  // --- TRIGGER BUTTON ---
+  // Format time
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Color helper
+  const getColorClasses = (color, variant = "default") => {
+    const colors = {
+      blue: {
+        default: "from-blue-500 to-blue-600",
+        light:
+          "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300",
+        text: "text-blue-600 dark:text-blue-400",
+      },
+      orange: {
+        default: "from-orange-500 to-orange-600",
+        light:
+          "bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-300",
+        text: "text-orange-600 dark:text-orange-400",
+      },
+      purple: {
+        default: "from-purple-500 to-purple-600",
+        light:
+          "bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-900/20 dark:border-purple-700 dark:text-purple-300",
+        text: "text-purple-600 dark:text-purple-400",
+      },
+      teal: {
+        default: "from-teal-500 to-teal-600",
+        light:
+          "bg-teal-50 border-teal-200 text-teal-700 dark:bg-teal-900/20 dark:border-teal-700 dark:text-teal-300",
+        text: "text-teal-600 dark:text-teal-400",
+      },
+      red: {
+        default: "from-red-500 to-red-600",
+        light:
+          "bg-red-50 border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300",
+        text: "text-red-600 dark:text-red-400",
+      },
+      pink: {
+        default: "from-pink-500 to-pink-600",
+        light:
+          "bg-pink-50 border-pink-200 text-pink-700 dark:bg-pink-900/20 dark:border-pink-700 dark:text-pink-300",
+        text: "text-pink-600 dark:text-pink-400",
+      },
+      green: {
+        default: "from-green-500 to-green-600",
+        light:
+          "bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300",
+        text: "text-green-600 dark:text-green-400",
+      },
+      indigo: {
+        default: "from-indigo-500 to-indigo-600",
+        light:
+          "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-indigo-300",
+        text: "text-indigo-600 dark:text-indigo-400",
+      },
+    };
+    return colors[color]?.[variant] || colors.blue[variant];
+  };
+
+  // ===== TRIGGER BUTTON =====
   if (!isOpen) {
     return (
-       <button
+      <button
         onClick={() => setIsOpen(true)}
-        className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-slate-900 px-8 py-4 font-bold text-white shadow-xl transition-all hover:scale-105 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+        className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 font-bold text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl"
       >
         <span className="relative z-10 flex items-center gap-2">
           <Play size={20} fill="currentColor" />
-          Start Quiz
+          Start Kana Quiz
         </span>
-        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-20 transition-transform duration-500 group-hover:translate-x-0" />
+        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-purple-600 to-pink-600 transition-transform duration-500 group-hover:translate-x-0" />
       </button>
     );
   }
 
-  // --- PORTAL CONTENT ---
-  // Only render portal when mounted on client to prevent hydration mismatch
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-0 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] max-w-xl flex flex-col bg-white shadow-2xl dark:bg-[#0f172a] dark:border dark:border-white/10 sm:rounded-3xl overflow-hidden">
-        
-        {/* Header - Fixed Height */}
-        <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 shrink-0 h-16 sm:h-auto">
-          <h3 className="font-bold text-slate-800 dark:text-white truncate pr-2 text-lg">
-            {phase === 'menu' && 'Quiz Menu'}
-            {phase === 'config' && 'Custom Challenge'}
-            {phase === 'game' && `Question ${currentIndex + 1}/${questions.length}`}
-            {phase === 'result' && 'Quiz Results'}
-          </h3>
-          <button 
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-0 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] max-w-4xl flex flex-col bg-white shadow-2xl dark:bg-[#0f172a] dark:border dark:border-white/10 sm:rounded-3xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 shrink-0">
+          <div className="flex items-center gap-3">
+            <h3 className="font-bold text-slate-800 dark:text-white truncate pr-2 text-lg">
+              {phase === "menu" && "Choose Your Quiz"}
+              {phase === "game" &&
+                config?.type === "match" &&
+                `Match Pairs • ${matchedPairs.length}/${matchPairs.left.length}`}
+              {phase === "game" &&
+                config?.type !== "match" &&
+                `Question ${currentIndex + 1}/${questions.length}`}
+              {phase === "result" && "Quiz Complete!"}
+            </h3>
+            {phase === "game" && timeLeft !== null && (
+              <div
+                className={cn(
+                  "flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold",
+                  timeLeft < 60
+                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                )}
+              >
+                <Clock size={14} />
+                {formatTime(timeLeft)}
+              </div>
+            )}
+          </div>
+          <button
             onClick={resetToMenu}
             className="rounded-full p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-white/10 transition-colors"
           >
@@ -394,455 +638,422 @@ export default function KanaQuizModal({ hiragana, katakana, vocabulary = [], sen
           </button>
         </div>
 
-        {/* Scrollable Content Area - Flexible Height */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth custom-scrollbar">
-          
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {/* MENU PHASE */}
-          {phase === 'menu' && (
+          {phase === "menu" && (
             <div className="space-y-6 py-4">
-              <div className="text-center space-y-2">
-                <div className="mx-auto flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
-                  <Settings size={32} className="sm:w-10 sm:h-10" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Choose Your Challenge</h2>
-                <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400">Select a preset or customize your experience.</p>
+              <div className="text-center space-y-2 mb-8">
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
+                  Choose Your Challenge
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Pick a quiz mode and start learning!
+                </p>
               </div>
 
-              <div className="grid gap-4">
-                <button 
-                  onClick={startQuickGame}
-                  className="flex items-center gap-4 rounded-2xl border-2 border-indigo-100 bg-white p-4 transition-all hover:border-indigo-500 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-indigo-400 text-left group"
-                >
-                  <div className="rounded-full bg-indigo-100 p-3 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300">
-                    <Play size={24} fill="currentColor" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">Quick Start</h4>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">10 Questions, Mixed Kana, Multiple Choice.</p>
-                  </div>
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {QUIZ_PRESETS.map((preset) => {
+                  const Icon = preset.icon;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => startQuiz(preset)}
+                      className="group relative flex flex-col gap-3 p-6 rounded-2xl border-2 border-transparent bg-gradient-to-br transition-all hover:scale-[1.02] hover:shadow-xl text-left overflow-hidden"
+                      style={{
+                        backgroundImage: `linear-gradient(135deg, var(--tw-gradient-stops))`,
+                        "--tw-gradient-from": `${
+                          preset.color === "blue"
+                            ? "#3b82f6"
+                            : preset.color === "orange"
+                            ? "#f97316"
+                            : preset.color === "purple"
+                            ? "#a855f7"
+                            : preset.color === "teal"
+                            ? "#14b8a6"
+                            : preset.color === "red"
+                            ? "#ef4444"
+                            : preset.color === "pink"
+                            ? "#ec4899"
+                            : preset.color === "green"
+                            ? "#10b981"
+                            : "#6366f1"
+                        }`,
+                        "--tw-gradient-to": `${
+                          preset.color === "blue"
+                            ? "#2563eb"
+                            : preset.color === "orange"
+                            ? "#ea580c"
+                            : preset.color === "purple"
+                            ? "#9333ea"
+                            : preset.color === "teal"
+                            ? "#0d9488"
+                            : preset.color === "red"
+                            ? "#dc2626"
+                            : preset.color === "pink"
+                            ? "#db2777"
+                            : preset.color === "green"
+                            ? "#059669"
+                            : "#4f46e5"
+                        }`,
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 group-hover:bg-white/80 dark:group-hover:bg-slate-900/80 transition-colors" />
 
-                <button 
-                  onClick={() => setPhase('config')}
-                  className="flex items-center gap-4 rounded-2xl border-2 border-slate-100 bg-white p-4 transition-all hover:border-slate-400 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-slate-400 text-left group"
-                >
-                  <div className="rounded-full bg-slate-100 p-3 text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                    <Settings size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-slate-600 dark:group-hover:text-slate-200">Custom Quiz</h4>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Customize count, mode, type, and more.</p>
-                  </div>
-                </button>
+                      <div className="relative flex items-start justify-between">
+                        <div
+                          className={cn(
+                            "rounded-xl p-3 bg-gradient-to-br shadow-lg",
+                            `from-${preset.color}-400 to-${preset.color}-600`
+                          )}
+                          style={{
+                            backgroundImage: `linear-gradient(135deg, ${
+                              preset.color === "blue"
+                                ? "#60a5fa, #2563eb"
+                                : preset.color === "orange"
+                                ? "#fb923c, #ea580c"
+                                : preset.color === "purple"
+                                ? "#c084fc, #9333ea"
+                                : preset.color === "teal"
+                                ? "#2dd4bf, #0d9488"
+                                : preset.color === "red"
+                                ? "#f87171, #dc2626"
+                                : preset.color === "pink"
+                                ? "#f472b6, #db2777"
+                                : preset.color === "green"
+                                ? "#34d399, #059669"
+                                : "#818cf8, #4f46e5"
+                            })`,
+                          }}
+                        >
+                          <Icon size={24} className="text-white" />
+                        </div>
+                        <Play
+                          size={20}
+                          className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors"
+                        />
+                      </div>
+
+                      <div className="relative">
+                        <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                          {preset.title}
+                        </h4>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          {preset.subtitle}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* CONFIG PHASE */}
-          {phase === 'config' && (
-            <div className="space-y-6 pb-20 sm:pb-0"> 
-              
-              {/* Content Mode */}
-              <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400">Script</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['hiragana', 'katakana', 'mixed'].map(m => (
-                    <button
-                      key={m}
-                      onClick={() => setConfig({ ...config, mode: m })}
+          {/* GAME PHASE - MULTIPLE CHOICE */}
+          {phase === "game" &&
+            config?.type === "choice" &&
+            questions[currentIndex] && (
+              <div className="space-y-6 py-4">
+                <div className="text-center">
+                  <div className="flex min-h-[140px] sm:min-h-[180px] flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-white/5 dark:to-white/10 p-6 shadow-inner">
+                    <span
                       className={cn(
-                        "rounded-xl border-2 py-2 text-sm sm:text-base font-bold capitalize transition-all",
-                        config.mode === m 
-                          ? "border-pink-500 bg-pink-50 text-pink-700 dark:bg-pink-900/20 dark:text-pink-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
+                        "font-black text-slate-900 dark:text-white break-all leading-relaxed",
+                        questions[currentIndex].display.length > 20
+                          ? "text-2xl sm:text-3xl"
+                          : questions[currentIndex].display.length > 10
+                          ? "text-3xl sm:text-5xl"
+                          : "text-5xl sm:text-7xl"
                       )}
                     >
-                      {m}
-                    </button>
-                  ))}
+                      {questions[currentIndex].display}
+                    </span>
+                  </div>
+
+                  {questions[currentIndex].meaning && (
+                    <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400 italic">
+                      {questions[currentIndex].meaning}
+                    </p>
+                  )}
                 </div>
-              </div>
 
-              {/* Length & Source (Combined Logic) */}
-              <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400">Content Type</label>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                   <button
-                      onClick={() => setConfig({ ...config, length: 1, source: 'random', sentenceDifficulty: 'all' })}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3 font-bold transition-all",
-                        config.length === 1
-                          ? "border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                      )}
-                    >
-                      <span>Single Char</span>
-                    </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {questions[currentIndex].options.map((opt) => {
+                    const isCorrect =
+                      opt.label === questions[currentIndex].answer;
+                    const isSelected = selectedAnswer === opt.label;
 
-                    <button
-                      onClick={() => setConfig({ ...config, length: 'word', source: 'database', sentenceDifficulty: 'all' })}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3 font-bold transition-all",
-                        config.source === 'database'
-                          ? "border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                      )}
-                    >
-                      <span>Real Words</span>
-                      <span className="text-[10px] font-normal opacity-70">Database</span>
-                    </button>
+                    let btnClass =
+                      "relative flex items-center justify-center rounded-2xl border-2 p-6 transition-all font-bold text-lg ";
 
-                     <button
-                      onClick={() => setConfig({ ...config, length: 'sentence', source: 'sentences', sentenceDifficulty: 'all' })}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3 font-bold transition-all",
-                        config.source === 'sentences'
-                          ? "border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                      )}
-                    >
-                      <span>Sentences</span>
-                      <span className="text-[10px] font-normal opacity-70">Database</span>
-                    </button>
+                    if (isAnswered) {
+                      if (isCorrect) {
+                        btnClass +=
+                          "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 ring-4 ring-green-500/20";
+                      } else if (isSelected) {
+                        btnClass +=
+                          "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400 opacity-60";
+                      } else {
+                        btnClass +=
+                          "border-slate-200 bg-slate-50 dark:border-white/5 dark:bg-white/5 opacity-40";
+                      }
+                    } else {
+                      btnClass +=
+                        "cursor-pointer border-slate-200 bg-white hover:border-indigo-500 hover:shadow-lg hover:-translate-y-1 dark:border-white/10 dark:bg-white/5 dark:hover:border-indigo-400";
+                    }
 
-                     <button
-                      onClick={() => setConfig({ ...config, length: 'word', source: 'random', sentenceDifficulty: 'all' })}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3 font-bold transition-all",
-                        config.length !== 1 && config.source === 'random'
-                          ? "border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/20 dark:text-teal-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                      )}
-                    >
-                      <span>Random</span>
-                      <span className="text-[10px] font-normal opacity-70">Gibberish</span>
-                    </button>
-                </div>
-              </div>
-
-              {/* Sentence Difficulty Selector */}
-              {config.source === 'sentences' && (
-                <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                  <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400">Sentence Length</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                    {['all', 'short', 'medium', 'long', 'very_long'].map(d => (
+                    return (
                       <button
-                        key={d}
-                        onClick={() => setConfig({ ...config, sentenceDifficulty: d })}
-                        className={cn(
-                          "rounded-lg border-2 py-2 font-bold capitalize transition-all",
-                          config.sentenceDifficulty === d 
-                            ? "border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400" 
-                            : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                        )}
+                        key={opt.id}
+                        disabled={isAnswered}
+                        onClick={() => handleChoiceAnswer(opt.label)}
+                        className={btnClass}
                       >
-                        {d.replace('_', ' ')}
+                        {opt.label}
+                        {isAnswered && isCorrect && (
+                          <Check
+                            size={24}
+                            className="absolute top-3 right-3 text-green-600 dark:text-green-400"
+                          />
+                        )}
                       </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Answer Style */}
-              <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400">Answer Style</label>
-                <div className="grid grid-cols-2 gap-2">
-                   <button
-                      onClick={() => setConfig({ ...config, type: 'choice' })}
-                      className={cn(
-                        "flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-bold transition-all",
-                        config.type === 'choice'
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                      )}
-                    >
-                      <MousePointer2 size={18} /> Choice
-                    </button>
-                    <button
-                      onClick={() => setConfig({ ...config, type: 'input' })}
-                      className={cn(
-                        "flex items-center justify-center gap-2 rounded-xl border-2 py-3 font-bold transition-all",
-                        config.type === 'input'
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
-                      )}
-                    >
-                      <Keyboard size={18} /> Typing
-                    </button>
+                    );
+                  })}
                 </div>
               </div>
+            )}
 
-              {/* Count */}
-              <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-400">Question Count</label>
-                <div className="flex flex-wrap gap-2">
-                  {[10, 20, 50, 100].map(c => (
-                    <button
-                      key={c}
-                      onClick={() => { setConfig({ ...config, count: c }); setCustomCount(c); }}
+          {/* GAME PHASE - DRAG & DROP */}
+          {phase === "game" &&
+            config?.type === "drag" &&
+            questions[currentIndex] && (
+              <div className="space-y-6 py-4">
+                <div className="text-center">
+                  <p className="mb-4 text-sm font-bold uppercase tracking-widest text-slate-400">
+                    Drag the correct answer
+                  </p>
+                  <div className="flex min-h-[140px] sm:min-h-[180px] flex-col items-center justify-center rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6">
+                    <span
                       className={cn(
-                        "flex-1 min-w-[60px] rounded-xl border-2 py-2 font-bold transition-all",
-                        config.count === c 
-                          ? "border-slate-800 bg-slate-800 text-white dark:bg-white dark:text-slate-900" 
-                          : "border-slate-100 bg-white text-slate-500 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-400"
+                        "font-black text-slate-900 dark:text-white",
+                        questions[currentIndex].display.length > 10
+                          ? "text-4xl sm:text-6xl"
+                          : "text-6xl sm:text-8xl"
                       )}
                     >
-                      {c}
-                    </button>
-                  ))}
-                  <div className="flex-1 min-w-[80px] relative">
-                     <input 
-                      type="number"
-                      min="1"
-                      max="500"
-                      value={customCount}
-                      onChange={(e) => {
-                         const val = parseInt(e.target.value);
-                         setCustomCount(val);
-                         setConfig({ ...config, count: val });
-                      }}
-                      className={cn(
-                        "w-full rounded-xl border-2 bg-transparent py-2 px-2 text-center font-bold focus:outline-none focus:ring-2 focus:ring-slate-500",
-                         ![10, 20, 50, 100].includes(config.count)
-                          ? "border-slate-800 text-slate-900 dark:border-white dark:text-white"
-                          : "border-slate-100 text-slate-500 dark:border-white/10 dark:text-slate-400"
-                      )}
-                     />
+                      {questions[currentIndex].display}
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              {/* Auto Advance Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white">Auto Advance</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Next question automatically</p>
-                </div>
-                <button
-                  onClick={() => setConfig({ ...config, autoAdvance: !config.autoAdvance })}
+                {/* Drop Zone */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
                   className={cn(
-                    "relative h-8 w-14 rounded-full transition-colors",
-                    config.autoAdvance ? "bg-green-500" : "bg-slate-300 dark:bg-white/20"
+                    "flex min-h-[100px] items-center justify-center rounded-2xl border-4 border-dashed p-6 transition-all",
+                    dragOverSlot &&
+                      !isAnswered &&
+                      "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 scale-105",
+                    !dragOverSlot &&
+                      !isAnswered &&
+                      "border-slate-300 dark:border-white/20",
+                    isAnswered &&
+                      feedback === "correct" &&
+                      "border-green-500 bg-green-50 dark:bg-green-900/20",
+                    isAnswered &&
+                      feedback === "incorrect" &&
+                      "border-red-500 bg-red-50 dark:bg-red-900/20"
                   )}
                 >
-                  <span
-                    className={cn(
-                      "absolute top-1 left-1 h-6 w-6 rounded-full bg-white shadow-sm transition-transform",
-                      config.autoAdvance ? "translate-x-6" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
-
-              <div className="pt-4 pb-10 sm:pb-0">
-                 <button
-                  onClick={startCustomGame}
-                  className="w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-slate-900"
-                 >
-                   Start Challenge
-                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* GAME PHASE */}
-          {phase === 'game' && questions[currentIndex] && (
-            <div className="space-y-6 sm:space-y-8 py-2">
-              <div className="text-center">
-                 <p className="mb-2 sm:mb-4 text-xs sm:text-sm font-bold uppercase tracking-widest text-slate-400">
-                    {questions[currentIndex].direction === 'k2r' ? 'Type Romaji' : 'Type Kana'}
-                 </p>
-                 <div className="flex min-h-[120px] sm:min-h-[160px] flex-col items-center justify-center rounded-3xl bg-slate-50 p-4 sm:p-6 dark:bg-white/5">
-                    <span className={cn(
-                      "font-black text-slate-900 dark:text-white transition-all break-all leading-relaxed",
-                      questions[currentIndex].display.length > 30 ? "text-lg sm:text-2xl text-left" : 
-                      questions[currentIndex].display.length > 15 ? "text-xl sm:text-3xl" : 
-                      questions[currentIndex].display.length > 10 ? "text-2xl sm:text-4xl" : 
-                      questions[currentIndex].display.length > 4 ? "text-4xl sm:text-6xl" : "text-6xl sm:text-7xl"
-                    )}>
-                       {questions[currentIndex].display}
-                    </span>
-                 </div>
-                 
-                 {/* Script Hint for R2K - ONLY for Input Mode */}
-                 {questions[currentIndex].direction === 'r2k' && config.type === 'input' && (
-                   <div className="flex justify-center gap-2 mt-2">
-                      {/[ァ-ン]/.test(questions[currentIndex].answer) && (
-                        <span className="px-2 py-1 rounded-md bg-orange-100 text-orange-600 text-xs font-bold dark:bg-orange-900/30 dark:text-orange-400">
-                          Contains Katakana
-                        </span>
+                  {droppedItem ? (
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {droppedItem.label}
+                      </span>
+                      {isAnswered && feedback === "correct" && (
+                        <Check size={32} className="text-green-600" />
                       )}
-                   </div>
-                 )}
-
-                 {questions[currentIndex].meaning && (
-                   <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400 italic">
-                     {questions[currentIndex].meaning}
-                   </p>
-                 )}
-              </div>
-
-              {/* INPUT MODE (TextArea) */}
-              {config.type === 'input' && (
-                <form onSubmit={handleInputSubmit} className="space-y-4">
-                  <div className="relative">
-                    <textarea
-                      ref={inputRef}
-                      autoComplete="off"
-                      autoFocus
-                      disabled={isAnswered}
-                      value={inputAnswer}
-                      onChange={(e) => setInputAnswer(e.target.value)}
-                      onKeyDown={(e) => {
-                        if(e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleInputSubmit(e);
-                        }
-                      }}
-                      placeholder={
-                        questions[currentIndex].direction === 'k2r' 
-                          ? "Type Romaji..." 
-                          : "Type Kana..."
-                      }
-                      className={cn(
-                        "w-full min-h-[100px] resize-y rounded-2xl border-2 px-4 sm:px-6 py-4 text-center text-lg sm:text-xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-70 dark:bg-black/20 dark:text-white",
-                        !isAnswered && "border-slate-200 focus:border-indigo-500 dark:border-white/10 dark:focus:border-indigo-400",
-                        isAnswered && feedback === 'correct' && "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400",
-                        isAnswered && feedback === 'close' && "border-yellow-500 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400",
-                        isAnswered && feedback === 'incorrect' && "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-                      )}
-                    />
-                    
-                    {/* Status Icons */}
-                    {isAnswered && (
-                      <div className="absolute right-4 top-4">
-                        {feedback === 'correct' && <Check size={24} className="text-green-600 dark:text-green-400" />}
-                        {feedback === 'close' && <AlertCircle size={24} className="text-yellow-600 dark:text-yellow-400" />}
-                        {feedback === 'incorrect' && <X size={24} className="text-red-600 dark:text-red-400" />}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Feedback / Diff Display */}
-                  {isAnswered && (feedback === 'incorrect' || feedback === 'close') && (
-                    <div className="animate-in slide-in-from-top-2 text-center p-4 bg-slate-50 rounded-xl border border-slate-100 dark:bg-white/5 dark:border-white/5">
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                        Correction
-                      </p>
-                      
-                      {/* Diff Visualization */}
-                      <div className="text-base sm:text-lg font-bold leading-relaxed break-all">
-                        {diffResult.map((item, idx) => (
-                            <span 
-                                key={idx}
-                                className={cn(
-                                    item.status === 'correct' ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-0.5 rounded"
-                                )}
-                            >
-                                {item.char}
-                            </span>
-                        ))}
-                      </div>
-                      
-                      {/* Show user input literal for comparison if needed */}
-                      {feedback === 'close' && (
-                          <p className="mt-2 text-xs sm:text-sm text-yellow-600 dark:text-yellow-400 font-bold">
-                              Almost correct! Watch out for small typos.
-                          </p>
+                      {isAnswered && feedback === "incorrect" && (
+                        <X size={32} className="text-red-600" />
                       )}
                     </div>
-                  )}
-
-                  {!isAnswered ? (
-                    <button type="submit" className="w-full rounded-xl bg-indigo-600 py-4 font-bold text-white shadow-lg hover:bg-indigo-700">
-                      Check Answer
-                    </button>
                   ) : (
-                    !config.autoAdvance && (
-                      <button 
-                        ref={nextButtonRef}
-                        type="button" 
-                        onClick={nextQuestion} 
-                        className="w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg hover:bg-slate-800 dark:bg-white dark:text-slate-900 animate-in fade-in slide-in-from-bottom-2"
-                      >
-                        Next Question
-                      </button>
-                    )
+                    <p className="text-slate-400 font-medium">
+                      Drop answer here
+                    </p>
                   )}
-                </form>
-              )}
+                </div>
 
-              {/* CHOICE MODE */}
-              {config.type === 'choice' && (
-                 <div className="space-y-4">
-                   <div className="grid grid-cols-1 gap-3">
-                   {questions[currentIndex].options.map((opt) => {
-                      const isCorrect = opt.label === questions[currentIndex].answer;
-                      const isSelected = selectedAnswer === opt.label;
-                      
-                      let btnClass = "relative flex flex-col items-center justify-center rounded-xl border-2 p-4 transition-all ";
-                      if (isAnswered) {
-                         if (isCorrect) btnClass += "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400";
-                         else if (isSelected) btnClass += "border-red-500 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 opacity-50";
-                         else btnClass += "border-slate-100 bg-slate-50 opacity-50 dark:border-white/5 dark:bg-white/5";
-                      } else {
-                         btnClass += "cursor-pointer border-slate-100 bg-white hover:border-indigo-500 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-indigo-400";
-                      }
-
-                      return (
-                        <button key={opt.id} disabled={isAnswered} onClick={() => handleChoiceAnswer(opt.label)} className={btnClass}>
-                           <span className={cn(
-                             "font-bold dark:text-white break-all",
-                             opt.label.length > 20 ? "text-base text-left" : "text-xl"
-                           )}>{opt.label}</span>
-                        </button>
-                      );
-                   })}
-                   </div>
-                   
-                   {isAnswered && !config.autoAdvance && (
-                      <button 
-                        ref={nextButtonRef}
-                        onClick={nextQuestion} 
-                        className="w-full rounded-xl bg-slate-900 py-4 font-bold text-white shadow-lg hover:bg-slate-800 dark:bg-white dark:text-slate-900 animate-in fade-in slide-in-from-bottom-2"
+                {/* Draggable Items */}
+                {!isAnswered && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {dragItems.map((item) => (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        className="cursor-move rounded-xl border-2 border-slate-200 bg-white p-4 text-center font-bold shadow-sm hover:shadow-lg hover:scale-105 transition-all dark:border-white/10 dark:bg-white/5"
                       >
-                        Next Question
+                        {item.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {isAnswered && feedback === "incorrect" && (
+                  <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                    <p className="text-sm font-bold text-red-700 dark:text-red-400">
+                      Correct answer: {questions[currentIndex].answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+          {/* GAME PHASE - MATCH PAIRS */}
+          {phase === "game" && config?.type === "match" && (
+            <div className="space-y-6 py-4">
+              <div className="text-center mb-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2">
+                  Match the pairs
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Click one item from each side to match them
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 sm:gap-8">
+                {/* Left Side */}
+                <div className="space-y-3">
+                  {matchPairs.left.map((item) => {
+                    const isMatched = matchedPairs.some(
+                      (p) => p.leftId === item.id
+                    );
+                    const isSelected = selectedLeft?.id === item.id;
+                    const isWrong = wrongAttempts.some(
+                      (w) => w.leftId === item.id
+                    );
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleMatchClick("left", item)}
+                        disabled={isMatched}
+                        className={cn(
+                          "w-full rounded-xl border-2 p-4 font-bold text-2xl transition-all",
+                          isMatched &&
+                            "border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 opacity-60",
+                          isSelected &&
+                            !isMatched &&
+                            "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 scale-105 ring-4 ring-indigo-500/20",
+                          !isSelected &&
+                            !isMatched &&
+                            "border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 hover:border-slate-400 hover:scale-105",
+                          isWrong && "animate-shake border-red-500"
+                        )}
+                      >
+                        {item.text}
                       </button>
-                   )}
-                 </div>
-              )}
+                    );
+                  })}
+                </div>
+
+                {/* Right Side */}
+                <div className="space-y-3">
+                  {matchPairs.right.map((item) => {
+                    const isMatched = matchedPairs.some(
+                      (p) => p.rightId === item.id
+                    );
+                    const isSelected = selectedRight?.id === item.id;
+                    const isWrong = wrongAttempts.some(
+                      (w) => w.rightId === item.id
+                    );
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleMatchClick("right", item)}
+                        disabled={isMatched}
+                        className={cn(
+                          "w-full rounded-xl border-2 p-4 font-bold text-xl transition-all",
+                          isMatched &&
+                            "border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 opacity-60",
+                          isSelected &&
+                            !isMatched &&
+                            "border-pink-500 bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400 scale-105 ring-4 ring-pink-500/20",
+                          !isSelected &&
+                            !isMatched &&
+                            "border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 hover:border-slate-400 hover:scale-105",
+                          isWrong && "animate-shake border-red-500"
+                        )}
+                      >
+                        {item.text}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Progress */}
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-white/10">
+                  <span className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                    Matched: {matchedPairs.length} / {matchPairs.left.length}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
           {/* RESULT PHASE */}
-          {phase === 'result' && (
-             <div className="text-center space-y-6 py-4">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-yellow-100 text-yellow-500 dark:bg-yellow-900/30">
-                <Trophy size={48} />
+          {phase === "result" && (
+            <div className="text-center space-y-6 py-8">
+              <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-2xl">
+                <Trophy size={64} />
               </div>
+
               <div>
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white">
-                  {Math.round((score / questions.length) * 100)}% Score
+                <h2 className="text-5xl font-black text-slate-900 dark:text-white mb-2">
+                  {config?.type === "match"
+                    ? `${matchedPairs.length}/${matchPairs.left.length}`
+                    : `${Math.round((score / questions.length) * 100)}%`}
                 </h2>
-                <p className="text-slate-500 dark:text-slate-400">
-                  You got {score} out of {questions.length} correct!
+                <p className="text-xl text-slate-600 dark:text-slate-400">
+                  {config?.type === "match"
+                    ? `You matched ${matchedPairs.length} pairs!`
+                    : `${score} out of ${questions.length} correct`}
                 </p>
+
+                {timeLeft !== null && config?.timeLimit && (
+                  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                    Completed in {formatTime(config.timeLimit - timeLeft)}
+                  </p>
+                )}
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                 <button
-                  onClick={() => setPhase('menu')}
-                  className="rounded-xl border-2 border-slate-200 bg-transparent py-4 font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+
+              <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                <button
+                  onClick={() => setPhase("menu")}
+                  className="rounded-xl border-2 border-slate-200 bg-white py-4 font-bold text-slate-700 transition-all hover:bg-slate-50 hover:scale-105 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
                 >
-                  Main Menu
+                  New Quiz
                 </button>
                 <button
                   onClick={() => {
-                     setQuestions(generateQuestions(config));
-                     resetGameState();
-                     setPhase('game');
+                    if (config.type === "match") {
+                      generateMatchPairs(config);
+                    } else {
+                      setQuestions(generateQuestions(config));
+                    }
+                    resetGameState();
+                    if (config.timeLimit) {
+                      setTimeLeft(config.timeLimit);
+                    }
+                    setPhase("game");
                   }}
-                  className="rounded-xl bg-slate-900 py-4 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-white dark:text-slate-900"
+                  className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 py-4 font-bold text-white transition-all hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   <div className="flex items-center justify-center gap-2">
                     <RefreshCw size={20} />
@@ -852,9 +1063,27 @@ export default function KanaQuizModal({ hiragana, katakana, vocabulary = [], sen
               </div>
             </div>
           )}
-
         </div>
       </div>
+
+      {/* Add shake animation style */}
+      <style jsx>{`
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-10px);
+          }
+          75% {
+            transform: translateX(10px);
+          }
+        }
+        .animate-shake {
+          animation: shake 0.3s ease-in-out;
+        }
+      `}</style>
     </div>,
     document.body
   );
