@@ -1,0 +1,1339 @@
+[
+  {
+    "id": 1,
+    "character": "日",
+    "meaning_en": "day, sun, Japan",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 2,
+    "character": "月",
+    "meaning_en": "moon, month",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 3,
+    "character": "火",
+    "meaning_en": "fire",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 4,
+    "character": "水",
+    "meaning_en": "water",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 5,
+    "character": "木",
+    "meaning_en": "tree, wood",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 7,
+    "character": "土",
+    "meaning_en": "earth, soil",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 8,
+    "character": "人",
+    "meaning_en": "person",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 9,
+    "character": "一",
+    "meaning_en": "one",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 10,
+    "character": "二",
+    "meaning_en": "two",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 11,
+    "character": "三",
+    "meaning_en": "three",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 12,
+    "character": "四",
+    "meaning_en": "four",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 13,
+    "character": "五",
+    "meaning_en": "five",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 14,
+    "character": "六",
+    "meaning_en": "six",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 15,
+    "character": "七",
+    "meaning_en": "seven",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 16,
+    "character": "八",
+    "meaning_en": "eight",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 17,
+    "character": "九",
+    "meaning_en": "nine",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 18,
+    "character": "十",
+    "meaning_en": "ten",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 19,
+    "character": "百",
+    "meaning_en": "hundred",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 20,
+    "character": "千",
+    "meaning_en": "thousand",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 21,
+    "character": "万",
+    "meaning_en": "ten thousand",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 22,
+    "character": "円",
+    "meaning_en": "yen, circle",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 23,
+    "character": "年",
+    "meaning_en": "year",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 26,
+    "character": "中",
+    "meaning_en": "middle, inside",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 27,
+    "character": "上",
+    "meaning_en": "up, above",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 28,
+    "character": "下",
+    "meaning_en": "down, below",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 29,
+    "character": "左",
+    "meaning_en": "left",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 30,
+    "character": "右",
+    "meaning_en": "right",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 45,
+    "character": "半",
+    "meaning_en": "Half",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 46,
+    "character": "分",
+    "meaning_en": "Minute/Part",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 47,
+    "character": "時",
+    "meaning_en": "Time/Hour",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 52,
+    "character": "週",
+    "meaning_en": "Week",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 53,
+    "character": "今",
+    "meaning_en": "Now",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 54,
+    "character": "毎",
+    "meaning_en": "Every",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 55,
+    "character": "先",
+    "meaning_en": "Previous/First",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 56,
+    "character": "後",
+    "meaning_en": "After/Behind",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 69,
+    "character": "前",
+    "meaning_en": "Front/Before",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 70,
+    "character": "北",
+    "meaning_en": "North",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 71,
+    "character": "南",
+    "meaning_en": "South",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 72,
+    "character": "西",
+    "meaning_en": "West",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 73,
+    "character": "東",
+    "meaning_en": "East",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 76,
+    "character": "女",
+    "meaning_en": "Woman",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 77,
+    "character": "男",
+    "meaning_en": "Man",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 78,
+    "character": "父",
+    "meaning_en": "Father",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 79,
+    "character": "母",
+    "meaning_en": "Mother",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 80,
+    "character": "友",
+    "meaning_en": "Friend",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 81,
+    "character": "名",
+    "meaning_en": "Name",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 82,
+    "character": "何",
+    "meaning_en": "What",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 85,
+    "character": "休",
+    "meaning_en": "Rest",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 86,
+    "character": "国",
+    "meaning_en": "Country",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 88,
+    "character": "校",
+    "meaning_en": "School",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 89,
+    "character": "店",
+    "meaning_en": "Shop/Store",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 90,
+    "character": "駅",
+    "meaning_en": "Station",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 92,
+    "character": "会",
+    "meaning_en": "Meet/Meeting",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 93,
+    "character": "山",
+    "meaning_en": "Mountain",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 94,
+    "character": "川",
+    "meaning_en": "River",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 96,
+    "character": "行",
+    "meaning_en": "Go/Do",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 97,
+    "character": "来",
+    "meaning_en": "Come",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 98,
+    "character": "見",
+    "meaning_en": "See/Look",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 99,
+    "character": "聞",
+    "meaning_en": "Hear/Listen",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 100,
+    "character": "読",
+    "meaning_en": "Read",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 101,
+    "character": "書",
+    "meaning_en": "Write",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 102,
+    "character": "話",
+    "meaning_en": "Speak/Talk",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 104,
+    "character": "食",
+    "meaning_en": "Eat",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 105,
+    "character": "飲",
+    "meaning_en": "Drink",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 106,
+    "character": "入",
+    "meaning_en": "Enter",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 107,
+    "character": "出",
+    "meaning_en": "Exit/Leave",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 109,
+    "character": "言",
+    "meaning_en": "Say/Word",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 110,
+    "character": "生",
+    "meaning_en": "Life/Birth",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 113,
+    "character": "高",
+    "meaning_en": "High/Expensive",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 114,
+    "character": "安",
+    "meaning_en": "Cheap/Safe",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 115,
+    "character": "新",
+    "meaning_en": "New",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 116,
+    "character": "古",
+    "meaning_en": "Old",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 117,
+    "character": "長",
+    "meaning_en": "Long",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 118,
+    "character": "多",
+    "meaning_en": "Many/Much",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 119,
+    "character": "少",
+    "meaning_en": "Few/Little",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 120,
+    "character": "白",
+    "meaning_en": "White",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 121,
+    "character": "電",
+    "meaning_en": "Electricity",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 122,
+    "character": "車",
+    "meaning_en": "Car/Vehicle",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 123,
+    "character": "天",
+    "meaning_en": "Heaven/Sky",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 124,
+    "character": "雨",
+    "meaning_en": "Rain",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 125,
+    "character": "花",
+    "meaning_en": "Flower",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 126,
+    "character": "語",
+    "meaning_en": "Language/Word",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 127,
+    "character": "本",
+    "meaning_en": "Book/Origin",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 128,
+    "character": "手",
+    "meaning_en": "Hand",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 129,
+    "character": "足",
+    "meaning_en": "Foot/Leg/Enough",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 130,
+    "character": "目",
+    "meaning_en": "Eye",
+    "jlpt_level": "N5",
+    "example_count": "0"
+  },
+  {
+    "id": 25,
+    "character": "小",
+    "meaning_en": "small",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 138,
+    "character": "届",
+    "meaning_en": "reach",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 148,
+    "character": "閉",
+    "meaning_en": "close",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 190,
+    "character": "町",
+    "meaning_en": "town",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 191,
+    "character": "村",
+    "meaning_en": "village",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 224,
+    "character": "首",
+    "meaning_en": "neck",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 239,
+    "character": "涼",
+    "meaning_en": "cool",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 244,
+    "character": "悲",
+    "meaning_en": "sad",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 650,
+    "character": "置",
+    "meaning_en": "place",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 651,
+    "character": "捨",
+    "meaning_en": "throw away",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 652,
+    "character": "拾",
+    "meaning_en": "pick up",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 655,
+    "character": "与",
+    "meaning_en": "give",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 663,
+    "character": "怒",
+    "meaning_en": "angry",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 664,
+    "character": "泣",
+    "meaning_en": "cry",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 666,
+    "character": "喜",
+    "meaning_en": "rejoice",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 667,
+    "character": "驚",
+    "meaning_en": "surprise",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 672,
+    "character": "縮",
+    "meaning_en": "shrink",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 675,
+    "character": "掴",
+    "meaning_en": "grasp",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 677,
+    "character": "叩",
+    "meaning_en": "hit",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 678,
+    "character": "蹴",
+    "meaning_en": "kick",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 683,
+    "character": "官",
+    "meaning_en": "government official",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 711,
+    "character": "戚",
+    "meaning_en": "relative",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 714,
+    "character": "婚",
+    "meaning_en": "marriage",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 717,
+    "character": "孤",
+    "meaning_en": "orphan",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 720,
+    "character": "環",
+    "meaning_en": "ring/environment",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 727,
+    "character": "燥",
+    "meaning_en": "dry",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 730,
+    "character": "嵐",
+    "meaning_en": "storm",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 731,
+    "character": "霧",
+    "meaning_en": "fog",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 732,
+    "character": "雷",
+    "meaning_en": "thunder",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 734,
+    "character": "災",
+    "meaning_en": "disaster",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 741,
+    "character": "技",
+    "meaning_en": "skill",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 742,
+    "character": "械",
+    "meaning_en": "machine",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 772,
+    "character": "況",
+    "meaning_en": "condition",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 811,
+    "character": "功",
+    "meaning_en": "achievement",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 815,
+    "character": "研",
+    "meaning_en": "sharpen",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 816,
+    "character": "究",
+    "meaning_en": "research",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 819,
+    "character": "覧",
+    "meaning_en": "view",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 826,
+    "character": "較",
+    "meaning_en": "compare",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 844,
+    "character": "築",
+    "meaning_en": "construct",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 851,
+    "character": "塔",
+    "meaning_en": "tower",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 852,
+    "character": "壁",
+    "meaning_en": "wall",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 857,
+    "character": "船",
+    "meaning_en": "ship",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 860,
+    "character": "坂",
+    "meaning_en": "slope",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 861,
+    "character": "丘",
+    "meaning_en": "hill",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 862,
+    "character": "谷",
+    "meaning_en": "valley",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 870,
+    "character": "漁",
+    "meaning_en": "fishing",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 875,
+    "character": "髪",
+    "meaning_en": "hair",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 876,
+    "character": "眉",
+    "meaning_en": "eyebrow",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 877,
+    "character": "瞳",
+    "meaning_en": "pupil",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 878,
+    "character": "唇",
+    "meaning_en": "lips",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 880,
+    "character": "舌",
+    "meaning_en": "tongue",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 881,
+    "character": "喉",
+    "meaning_en": "throat",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 883,
+    "character": "肩",
+    "meaning_en": "shoulder",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 884,
+    "character": "胸",
+    "meaning_en": "chest",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 886,
+    "character": "腰",
+    "meaning_en": "waist",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 889,
+    "character": "膚",
+    "meaning_en": "skin",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 894,
+    "character": "液",
+    "meaning_en": "liquid",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 895,
+    "character": "汗",
+    "meaning_en": "sweat",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 896,
+    "character": "涙",
+    "meaning_en": "tears",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 904,
+    "character": "薬",
+    "meaning_en": "medicine",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 905,
+    "character": "毒",
+    "meaning_en": "poison",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 910,
+    "character": "秒",
+    "meaning_en": "second",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 911,
+    "character": "瞬",
+    "meaning_en": "instant",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 912,
+    "character": "暫",
+    "meaning_en": "temporary",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 917,
+    "character": "量",
+    "meaning_en": "quantity",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 919,
+    "character": "寸",
+    "meaning_en": "inch",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 920,
+    "character": "尺",
+    "meaning_en": "foot",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 921,
+    "character": "坪",
+    "meaning_en": "tsubo (unit)",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 922,
+    "character": "畳",
+    "meaning_en": "tatami",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 923,
+    "character": "升",
+    "meaning_en": "sho (unit)",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 924,
+    "character": "斗",
+    "meaning_en": "to (unit)",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 925,
+    "character": "匹",
+    "meaning_en": "counter animals",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 926,
+    "character": "枚",
+    "meaning_en": "counter flat",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 927,
+    "character": "巨",
+    "meaning_en": "giant",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 930,
+    "character": "厚",
+    "meaning_en": "thick",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 931,
+    "character": "薄",
+    "meaning_en": "thin",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 932,
+    "character": "鋭",
+    "meaning_en": "sharp",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 933,
+    "character": "鈍",
+    "meaning_en": "dull",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 945,
+    "character": "憎",
+    "meaning_en": "hate",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 954,
+    "character": "魂",
+    "meaning_en": "soul",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 958,
+    "character": "憶",
+    "meaning_en": "remember",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 960,
+    "character": "忘",
+    "meaning_en": "forget",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 965,
+    "character": "癖",
+    "meaning_en": "habit",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 968,
+    "character": "勇",
+    "meaning_en": "brave",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 972,
+    "character": "謙",
+    "meaning_en": "humble",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 973,
+    "character": "虚",
+    "meaning_en": "empty",
+    "jlpt_level": "N3",
+    "example_count": "1"
+  },
+  {
+    "id": 1664,
+    "character": "傭",
+    "meaning_en": "employ/hire",
+    "jlpt_level": "N2",
+    "example_count": "1"
+  },
+  {
+    "id": 1672,
+    "character": "董",
+    "meaning_en": "director",
+    "jlpt_level": "N2",
+    "example_count": "1"
+  },
+  {
+    "id": 1718,
+    "character": "訟",
+    "meaning_en": "litigation",
+    "jlpt_level": "N2",
+    "example_count": "1"
+  },
+  {
+    "id": 8223,
+    "character": "爆",
+    "meaning_en": "bomb/burst",
+    "jlpt_level": "N2",
+    "example_count": "0"
+  },
+  {
+    "id": 8225,
+    "character": "沈",
+    "meaning_en": "sink",
+    "jlpt_level": "N2",
+    "example_count": "0"
+  },
+  {
+    "id": 8227,
+    "character": "片",
+    "meaning_en": "one-sided/fragment",
+    "jlpt_level": "N2",
+    "example_count": "0"
+  },
+  {
+    "id": 8229,
+    "character": "甘",
+    "meaning_en": "sweet",
+    "jlpt_level": "N2",
+    "example_count": "0"
+  },
+  {
+    "id": 8230,
+    "character": "砂",
+    "meaning_en": "sand",
+    "jlpt_level": "N2",
+    "example_count": "0"
+  },
+  {
+    "id": 8232,
+    "character": "硬",
+    "meaning_en": "hard/stiff",
+    "jlpt_level": "N2",
+    "example_count": "0"
+  },
+  {
+    "id": 7709,
+    "character": "朕",
+    "meaning_en": "we (imperial)",
+    "jlpt_level": "N1",
+    "example_count": "1"
+  },
+  {
+    "id": 7721,
+    "character": "丙",
+    "meaning_en": "third/C",
+    "jlpt_level": "N1",
+    "example_count": "1"
+  },
+  {
+    "id": 8234,
+    "character": "扱",
+    "meaning_en": "handle",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8235,
+    "character": "依",
+    "meaning_en": "reliant",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8236,
+    "character": "威",
+    "meaning_en": "majesty/threaten",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8237,
+    "character": "為",
+    "meaning_en": "for/do",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8238,
+    "character": "偉",
+    "meaning_en": "admirable",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8240,
+    "character": "維",
+    "meaning_en": "fiber/maintain",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8241,
+    "character": "緯",
+    "meaning_en": "latitude",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  },
+  {
+    "id": 8242,
+    "character": "壱",
+    "meaning_en": "one (legal)",
+    "jlpt_level": "N1",
+    "example_count": "0"
+  }
+]

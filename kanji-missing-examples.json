@@ -1,0 +1,2053 @@
+[
+  {
+    "id": 1,
+    "character": "日",
+    "meaning_en": "day, sun, Japan",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "nichi",
+        "reading": "ニチ"
+      },
+      {
+        "romaji": "jitsu",
+        "reading": "ジツ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "hi",
+        "reading": "ひ"
+      },
+      {
+        "romaji": "ka",
+        "reading": "か"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "character": "月",
+    "meaning_en": "moon, month",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "getsu",
+        "reading": "ゲツ"
+      },
+      {
+        "romaji": "gatsu",
+        "reading": "ガツ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "tsuki",
+        "reading": "つき"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "character": "火",
+    "meaning_en": "fire",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "ka",
+        "reading": "カ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "hi",
+        "reading": "ひ"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "character": "水",
+    "meaning_en": "water",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "sui",
+        "reading": "スイ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "mizu",
+        "reading": "みず"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "character": "木",
+    "meaning_en": "tree, wood",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "moku",
+        "reading": "モク"
+      },
+      {
+        "romaji": "boku",
+        "reading": "ボク"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "ki",
+        "reading": "き"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "character": "土",
+    "meaning_en": "earth, soil",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "do",
+        "reading": "ド"
+      },
+      {
+        "romaji": "to",
+        "reading": "ト"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "tsuchi",
+        "reading": "つち"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "character": "人",
+    "meaning_en": "person",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "jin",
+        "reading": "ジン"
+      },
+      {
+        "romaji": "nin",
+        "reading": "ニン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "hito",
+        "reading": "ひと"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "character": "一",
+    "meaning_en": "one",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "ichi",
+        "reading": "イチ"
+      },
+      {
+        "romaji": "itsu",
+        "reading": "イツ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "hito",
+        "reading": "ひと"
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "character": "二",
+    "meaning_en": "two",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "ni",
+        "reading": "ニ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "futa",
+        "reading": "ふた"
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "character": "三",
+    "meaning_en": "three",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "san",
+        "reading": "サン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "mi",
+        "reading": "み"
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "character": "四",
+    "meaning_en": "four",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "shi",
+        "reading": "シ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "yo",
+        "reading": "よ"
+      },
+      {
+        "romaji": "yon",
+        "reading": "よん"
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "character": "五",
+    "meaning_en": "five",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "go",
+        "reading": "ゴ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "itsu",
+        "reading": "いつ"
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "character": "六",
+    "meaning_en": "six",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "roku",
+        "reading": "ロク"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "mu",
+        "reading": "む"
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "character": "七",
+    "meaning_en": "seven",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "shichi",
+        "reading": "シチ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "nana",
+        "reading": "なな"
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "character": "八",
+    "meaning_en": "eight",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "hachi",
+        "reading": "ハチ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "ya",
+        "reading": "や"
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "character": "九",
+    "meaning_en": "nine",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "kyuu",
+        "reading": "キュウ"
+      },
+      {
+        "romaji": "ku",
+        "reading": "ク"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "kokono",
+        "reading": "ここの"
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "character": "十",
+    "meaning_en": "ten",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "juu",
+        "reading": "ジュウ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "too",
+        "reading": "とお"
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "character": "百",
+    "meaning_en": "hundred",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "hyaku",
+        "reading": "ヒャク"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 20,
+    "character": "千",
+    "meaning_en": "thousand",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "sen",
+        "reading": "セン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "chi",
+        "reading": "ち"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "character": "万",
+    "meaning_en": "ten thousand",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "man",
+        "reading": "マン"
+      },
+      {
+        "romaji": "ban",
+        "reading": "バン"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 22,
+    "character": "円",
+    "meaning_en": "yen, circle",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "en",
+        "reading": "エン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "maru",
+        "reading": "まる"
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "character": "年",
+    "meaning_en": "year",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "nen",
+        "reading": "ネン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "toshi",
+        "reading": "とし"
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "character": "中",
+    "meaning_en": "middle, inside",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "chuu",
+        "reading": "チュウ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "naka",
+        "reading": "なか"
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "character": "上",
+    "meaning_en": "up, above",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "jou",
+        "reading": "ジョウ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "ue",
+        "reading": "うえ"
+      },
+      {
+        "romaji": "a",
+        "reading": "あ"
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "character": "下",
+    "meaning_en": "down, below",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "ka",
+        "reading": "カ"
+      },
+      {
+        "romaji": "ge",
+        "reading": "ゲ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "shita",
+        "reading": "した"
+      },
+      {
+        "romaji": "sa",
+        "reading": "さ"
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "character": "左",
+    "meaning_en": "left",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "sa",
+        "reading": "サ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "hidari",
+        "reading": "ひだり"
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "character": "右",
+    "meaning_en": "right",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "romaji": "u",
+        "reading": "ウ"
+      },
+      {
+        "romaji": "yuu",
+        "reading": "ユウ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "migi",
+        "reading": "みぎ"
+      }
+    ]
+  },
+  {
+    "id": 45,
+    "character": "半",
+    "meaning_en": "Half",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ハン",
+        "romaji": "han"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "なか.ば",
+        "romaji": "naka.ba"
+      }
+    ]
+  },
+  {
+    "id": 46,
+    "character": "分",
+    "meaning_en": "Minute/Part",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ブン",
+        "romaji": "bun"
+      },
+      {
+        "kana": "フン",
+        "romaji": "fun"
+      },
+      {
+        "kana": "ブ",
+        "romaji": "bu"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "わ.ける",
+        "romaji": "wa.keru"
+      },
+      {
+        "kana": "わ.かれる",
+        "romaji": "wa.kareru"
+      },
+      {
+        "kana": "わ.かる",
+        "romaji": "wa.karu"
+      }
+    ]
+  },
+  {
+    "id": 47,
+    "character": "時",
+    "meaning_en": "Time/Hour",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ジ",
+        "romaji": "ji"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "とき",
+        "romaji": "toki"
+      }
+    ]
+  },
+  {
+    "id": 52,
+    "character": "週",
+    "meaning_en": "Week",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "シュウ",
+        "romaji": "shuu"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 53,
+    "character": "今",
+    "meaning_en": "Now",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "コン",
+        "romaji": "kon"
+      },
+      {
+        "kana": "キン",
+        "romaji": "kin"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "いま",
+        "romaji": "ima"
+      }
+    ]
+  },
+  {
+    "id": 54,
+    "character": "毎",
+    "meaning_en": "Every",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "マイ",
+        "romaji": "mai"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "ごと",
+        "romaji": "goto"
+      }
+    ]
+  },
+  {
+    "id": 55,
+    "character": "先",
+    "meaning_en": "Previous/First",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "セン",
+        "romaji": "sen"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "さき",
+        "romaji": "saki"
+      },
+      {
+        "kana": "ま.ず",
+        "romaji": "ma.zu"
+      }
+    ]
+  },
+  {
+    "id": 56,
+    "character": "後",
+    "meaning_en": "After/Behind",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ゴ",
+        "romaji": "go"
+      },
+      {
+        "kana": "コウ",
+        "romaji": "kou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "のち",
+        "romaji": "nochi"
+      },
+      {
+        "kana": "うし.ろ",
+        "romaji": "ushi.ro"
+      },
+      {
+        "kana": "あと",
+        "romaji": "ato"
+      }
+    ]
+  },
+  {
+    "id": 69,
+    "character": "前",
+    "meaning_en": "Front/Before",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ゼン",
+        "romaji": "zen"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "まえ",
+        "romaji": "mae"
+      }
+    ]
+  },
+  {
+    "id": 70,
+    "character": "北",
+    "meaning_en": "North",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ホク",
+        "romaji": "hoku"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "きた",
+        "romaji": "kita"
+      }
+    ]
+  },
+  {
+    "id": 71,
+    "character": "南",
+    "meaning_en": "South",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ナン",
+        "romaji": "nan"
+      },
+      {
+        "kana": "ナ",
+        "romaji": "na"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "みなみ",
+        "romaji": "minami"
+      }
+    ]
+  },
+  {
+    "id": 72,
+    "character": "西",
+    "meaning_en": "West",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "セイ",
+        "romaji": "sei"
+      },
+      {
+        "kana": "サイ",
+        "romaji": "sai"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "にし",
+        "romaji": "nishi"
+      }
+    ]
+  },
+  {
+    "id": 73,
+    "character": "東",
+    "meaning_en": "East",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "トウ",
+        "romaji": "tou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "ひがし",
+        "romaji": "higashi"
+      }
+    ]
+  },
+  {
+    "id": 76,
+    "character": "女",
+    "meaning_en": "Woman",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ジョ",
+        "romaji": "jo"
+      },
+      {
+        "kana": "ニョ",
+        "romaji": "nyo"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "おんな",
+        "romaji": "onna"
+      },
+      {
+        "kana": "め",
+        "romaji": "me"
+      }
+    ]
+  },
+  {
+    "id": 77,
+    "character": "男",
+    "meaning_en": "Man",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ダン",
+        "romaji": "dan"
+      },
+      {
+        "kana": "ナン",
+        "romaji": "nan"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "おとこ",
+        "romaji": "otoko"
+      }
+    ]
+  },
+  {
+    "id": 78,
+    "character": "父",
+    "meaning_en": "Father",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "フ",
+        "romaji": "fu"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "ちち",
+        "romaji": "chichi"
+      }
+    ]
+  },
+  {
+    "id": 79,
+    "character": "母",
+    "meaning_en": "Mother",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ボ",
+        "romaji": "bo"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "はは",
+        "romaji": "haha"
+      }
+    ]
+  },
+  {
+    "id": 80,
+    "character": "友",
+    "meaning_en": "Friend",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ユウ",
+        "romaji": "yuu"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "とも",
+        "romaji": "tomo"
+      }
+    ]
+  },
+  {
+    "id": 81,
+    "character": "名",
+    "meaning_en": "Name",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "メイ",
+        "romaji": "mei"
+      },
+      {
+        "kana": "ミョウ",
+        "romaji": "myou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "な",
+        "romaji": "na"
+      }
+    ]
+  },
+  {
+    "id": 82,
+    "character": "何",
+    "meaning_en": "What",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "カ",
+        "romaji": "ka"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "なに",
+        "romaji": "nani"
+      },
+      {
+        "kana": "なん",
+        "romaji": "nan"
+      }
+    ]
+  },
+  {
+    "id": 85,
+    "character": "休",
+    "meaning_en": "Rest",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "キュウ",
+        "romaji": "kyuu"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "やす.む",
+        "romaji": "yasu.mu"
+      },
+      {
+        "kana": "やす.まる",
+        "romaji": "yasu.maru"
+      }
+    ]
+  },
+  {
+    "id": 86,
+    "character": "国",
+    "meaning_en": "Country",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "コク",
+        "romaji": "koku"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "くに",
+        "romaji": "kuni"
+      }
+    ]
+  },
+  {
+    "id": 88,
+    "character": "校",
+    "meaning_en": "School",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "コウ",
+        "romaji": "kou"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 89,
+    "character": "店",
+    "meaning_en": "Shop/Store",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "テン",
+        "romaji": "ten"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "みせ",
+        "romaji": "mise"
+      }
+    ]
+  },
+  {
+    "id": 90,
+    "character": "駅",
+    "meaning_en": "Station",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "エキ",
+        "romaji": "eki"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 92,
+    "character": "会",
+    "meaning_en": "Meet/Meeting",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "カイ",
+        "romaji": "kai"
+      },
+      {
+        "kana": "エ",
+        "romaji": "e"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "あ.う",
+        "romaji": "a.u"
+      }
+    ]
+  },
+  {
+    "id": 93,
+    "character": "山",
+    "meaning_en": "Mountain",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "サン",
+        "romaji": "san"
+      },
+      {
+        "kana": "セン",
+        "romaji": "sen"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "やま",
+        "romaji": "yama"
+      }
+    ]
+  },
+  {
+    "id": 94,
+    "character": "川",
+    "meaning_en": "River",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "セン",
+        "romaji": "sen"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "かわ",
+        "romaji": "kawa"
+      }
+    ]
+  },
+  {
+    "id": 96,
+    "character": "行",
+    "meaning_en": "Go/Do",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "コウ",
+        "romaji": "kou"
+      },
+      {
+        "kana": "ギョウ",
+        "romaji": "gyou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "い.く",
+        "romaji": "i.ku"
+      },
+      {
+        "kana": "ゆ.く",
+        "romaji": "yu.ku"
+      },
+      {
+        "kana": "おこな.う",
+        "romaji": "okona.u"
+      }
+    ]
+  },
+  {
+    "id": 97,
+    "character": "来",
+    "meaning_en": "Come",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ライ",
+        "romaji": "rai"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "く.る",
+        "romaji": "ku.ru"
+      },
+      {
+        "kana": "きた.る",
+        "romaji": "kita.ru"
+      }
+    ]
+  },
+  {
+    "id": 98,
+    "character": "見",
+    "meaning_en": "See/Look",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ケン",
+        "romaji": "ken"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "み.る",
+        "romaji": "mi.ru"
+      },
+      {
+        "kana": "み.せる",
+        "romaji": "mi.seru"
+      }
+    ]
+  },
+  {
+    "id": 99,
+    "character": "聞",
+    "meaning_en": "Hear/Listen",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ブン",
+        "romaji": "bun"
+      },
+      {
+        "kana": "モン",
+        "romaji": "mon"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "き.く",
+        "romaji": "ki.ku"
+      },
+      {
+        "kana": "き.こえる",
+        "romaji": "ki.koeru"
+      }
+    ]
+  },
+  {
+    "id": 100,
+    "character": "読",
+    "meaning_en": "Read",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ドク",
+        "romaji": "doku"
+      },
+      {
+        "kana": "トク",
+        "romaji": "toku"
+      },
+      {
+        "kana": "トウ",
+        "romaji": "tou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "よ.む",
+        "romaji": "yo.mu"
+      }
+    ]
+  },
+  {
+    "id": 101,
+    "character": "書",
+    "meaning_en": "Write",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ショ",
+        "romaji": "sho"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "か.く",
+        "romaji": "ka.ku"
+      }
+    ]
+  },
+  {
+    "id": 102,
+    "character": "話",
+    "meaning_en": "Speak/Talk",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ワ",
+        "romaji": "wa"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "はな.す",
+        "romaji": "hana.su"
+      },
+      {
+        "kana": "はなし",
+        "romaji": "hanashi"
+      }
+    ]
+  },
+  {
+    "id": 104,
+    "character": "食",
+    "meaning_en": "Eat",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ショク",
+        "romaji": "shoku"
+      },
+      {
+        "kana": "ジキ",
+        "romaji": "jiki"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "た.べる",
+        "romaji": "ta.beru"
+      },
+      {
+        "kana": "く.う",
+        "romaji": "ku.u"
+      }
+    ]
+  },
+  {
+    "id": 105,
+    "character": "飲",
+    "meaning_en": "Drink",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "イン",
+        "romaji": "in"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "の.む",
+        "romaji": "no.mu"
+      }
+    ]
+  },
+  {
+    "id": 106,
+    "character": "入",
+    "meaning_en": "Enter",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ニュウ",
+        "romaji": "nyuu"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "い.る",
+        "romaji": "i.ru"
+      },
+      {
+        "kana": "はい.る",
+        "romaji": "hai.ru"
+      },
+      {
+        "kana": "い.れる",
+        "romaji": "i.reru"
+      }
+    ]
+  },
+  {
+    "id": 107,
+    "character": "出",
+    "meaning_en": "Exit/Leave",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "シュツ",
+        "romaji": "shutsu"
+      },
+      {
+        "kana": "スイ",
+        "romaji": "sui"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "で.る",
+        "romaji": "de.ru"
+      },
+      {
+        "kana": "だ.す",
+        "romaji": "da.su"
+      }
+    ]
+  },
+  {
+    "id": 109,
+    "character": "言",
+    "meaning_en": "Say/Word",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ゲン",
+        "romaji": "gen"
+      },
+      {
+        "kana": "ゴン",
+        "romaji": "gon"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "い.う",
+        "romaji": "i.u"
+      },
+      {
+        "kana": "こと",
+        "romaji": "koto"
+      }
+    ]
+  },
+  {
+    "id": 110,
+    "character": "生",
+    "meaning_en": "Life/Birth",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "セイ",
+        "romaji": "sei"
+      },
+      {
+        "kana": "ショウ",
+        "romaji": "shou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "い.きる",
+        "romaji": "i.kiru"
+      },
+      {
+        "kana": "う.まれる",
+        "romaji": "u.mareru"
+      },
+      {
+        "kana": "なま",
+        "romaji": "nama"
+      }
+    ]
+  },
+  {
+    "id": 113,
+    "character": "高",
+    "meaning_en": "High/Expensive",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "コウ",
+        "romaji": "kou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "たか.い",
+        "romaji": "taka.i"
+      },
+      {
+        "kana": "たか.まる",
+        "romaji": "taka.maru"
+      }
+    ]
+  },
+  {
+    "id": 114,
+    "character": "安",
+    "meaning_en": "Cheap/Safe",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "アン",
+        "romaji": "an"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "やす.い",
+        "romaji": "yasu.i"
+      }
+    ]
+  },
+  {
+    "id": 115,
+    "character": "新",
+    "meaning_en": "New",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "シン",
+        "romaji": "shin"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "あたら.しい",
+        "romaji": "atara.shii"
+      },
+      {
+        "kana": "あら.た",
+        "romaji": "ara.ta"
+      },
+      {
+        "kana": "にい",
+        "romaji": "nii"
+      }
+    ]
+  },
+  {
+    "id": 116,
+    "character": "古",
+    "meaning_en": "Old",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "コ",
+        "romaji": "ko"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "ふる.い",
+        "romaji": "furu.i"
+      },
+      {
+        "kana": "ふる.す",
+        "romaji": "furu.su"
+      }
+    ]
+  },
+  {
+    "id": 117,
+    "character": "長",
+    "meaning_en": "Long",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "チョウ",
+        "romaji": "chou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "なが.い",
+        "romaji": "naga.i"
+      }
+    ]
+  },
+  {
+    "id": 118,
+    "character": "多",
+    "meaning_en": "Many/Much",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "タ",
+        "romaji": "ta"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "おお.い",
+        "romaji": "oo.i"
+      }
+    ]
+  },
+  {
+    "id": 119,
+    "character": "少",
+    "meaning_en": "Few/Little",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ショウ",
+        "romaji": "shou"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "すく.ない",
+        "romaji": "suku.nai"
+      },
+      {
+        "kana": "すこ.し",
+        "romaji": "suko.shi"
+      }
+    ]
+  },
+  {
+    "id": 120,
+    "character": "白",
+    "meaning_en": "White",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ハク",
+        "romaji": "haku"
+      },
+      {
+        "kana": "ビャク",
+        "romaji": "byaku"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "しろ",
+        "romaji": "shiro"
+      },
+      {
+        "kana": "しろ.い",
+        "romaji": "shiro.i"
+      }
+    ]
+  },
+  {
+    "id": 121,
+    "character": "電",
+    "meaning_en": "Electricity",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "デン",
+        "romaji": "den"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 122,
+    "character": "車",
+    "meaning_en": "Car/Vehicle",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "シャ",
+        "romaji": "sha"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "くるま",
+        "romaji": "kuruma"
+      }
+    ]
+  },
+  {
+    "id": 123,
+    "character": "天",
+    "meaning_en": "Heaven/Sky",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "テン",
+        "romaji": "ten"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "あめ",
+        "romaji": "ame"
+      },
+      {
+        "kana": "あま",
+        "romaji": "ama"
+      }
+    ]
+  },
+  {
+    "id": 124,
+    "character": "雨",
+    "meaning_en": "Rain",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ウ",
+        "romaji": "u"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "あめ",
+        "romaji": "ame"
+      },
+      {
+        "kana": "あま",
+        "romaji": "ama"
+      }
+    ]
+  },
+  {
+    "id": 125,
+    "character": "花",
+    "meaning_en": "Flower",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "カ",
+        "romaji": "ka"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "はな",
+        "romaji": "hana"
+      }
+    ]
+  },
+  {
+    "id": 126,
+    "character": "語",
+    "meaning_en": "Language/Word",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ゴ",
+        "romaji": "go"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "かた.る",
+        "romaji": "kata.ru"
+      },
+      {
+        "kana": "かた.らう",
+        "romaji": "kata.rau"
+      }
+    ]
+  },
+  {
+    "id": 127,
+    "character": "本",
+    "meaning_en": "Book/Origin",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ホン",
+        "romaji": "hon"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "もと",
+        "romaji": "moto"
+      }
+    ]
+  },
+  {
+    "id": 128,
+    "character": "手",
+    "meaning_en": "Hand",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "シュ",
+        "romaji": "shu"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "て",
+        "romaji": "te"
+      },
+      {
+        "kana": "た",
+        "romaji": "ta"
+      }
+    ]
+  },
+  {
+    "id": 129,
+    "character": "足",
+    "meaning_en": "Foot/Leg/Enough",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "ソク",
+        "romaji": "soku"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "あし",
+        "romaji": "ashi"
+      },
+      {
+        "kana": "た.りる",
+        "romaji": "ta.riru"
+      },
+      {
+        "kana": "た.す",
+        "romaji": "ta.su"
+      }
+    ]
+  },
+  {
+    "id": 130,
+    "character": "目",
+    "meaning_en": "Eye",
+    "jlpt_level": "N5",
+    "onyomi": [
+      {
+        "kana": "モク",
+        "romaji": "moku"
+      },
+      {
+        "kana": "ボク",
+        "romaji": "boku"
+      }
+    ],
+    "kunyomi": [
+      {
+        "kana": "め",
+        "romaji": "me"
+      },
+      {
+        "kana": "ま",
+        "romaji": "ma"
+      }
+    ]
+  },
+  {
+    "id": 8223,
+    "character": "爆",
+    "meaning_en": "bomb/burst",
+    "jlpt_level": "N2",
+    "onyomi": [
+      {
+        "romaji": "baku",
+        "reading": "バク"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "hazeru",
+        "reading": "はぜる"
+      }
+    ]
+  },
+  {
+    "id": 8225,
+    "character": "沈",
+    "meaning_en": "sink",
+    "jlpt_level": "N2",
+    "onyomi": [
+      {
+        "romaji": "chin",
+        "reading": "チン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "shizumu",
+        "reading": "しずむ"
+      }
+    ]
+  },
+  {
+    "id": 8227,
+    "character": "片",
+    "meaning_en": "one-sided/fragment",
+    "jlpt_level": "N2",
+    "onyomi": [
+      {
+        "romaji": "hen",
+        "reading": "ヘン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "kata",
+        "reading": "かた"
+      }
+    ]
+  },
+  {
+    "id": 8229,
+    "character": "甘",
+    "meaning_en": "sweet",
+    "jlpt_level": "N2",
+    "onyomi": [
+      {
+        "romaji": "kan",
+        "reading": "カン"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "amai",
+        "reading": "あまい"
+      }
+    ]
+  },
+  {
+    "id": 8230,
+    "character": "砂",
+    "meaning_en": "sand",
+    "jlpt_level": "N2",
+    "onyomi": [
+      {
+        "romaji": "sa",
+        "reading": "サ"
+      },
+      {
+        "romaji": "sha",
+        "reading": "シャ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "suna",
+        "reading": "すな"
+      }
+    ]
+  },
+  {
+    "id": 8232,
+    "character": "硬",
+    "meaning_en": "hard/stiff",
+    "jlpt_level": "N2",
+    "onyomi": [
+      {
+        "romaji": "kou",
+        "reading": "コウ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "katai",
+        "reading": "かたい"
+      }
+    ]
+  },
+  {
+    "id": 8234,
+    "character": "扱",
+    "meaning_en": "handle",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "sou",
+        "reading": "ソウ"
+      },
+      {
+        "romaji": "kyuu",
+        "reading": "キュウ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "atsukau",
+        "reading": "あつかう"
+      }
+    ]
+  },
+  {
+    "id": 8235,
+    "character": "依",
+    "meaning_en": "reliant",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "i",
+        "reading": "イ"
+      },
+      {
+        "romaji": "e",
+        "reading": "エ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "yoru",
+        "reading": "よる"
+      }
+    ]
+  },
+  {
+    "id": 8236,
+    "character": "威",
+    "meaning_en": "majesty/threaten",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "i",
+        "reading": "イ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "odosu",
+        "reading": "おどす"
+      }
+    ]
+  },
+  {
+    "id": 8237,
+    "character": "為",
+    "meaning_en": "for/do",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "i",
+        "reading": "イ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "tame",
+        "reading": "ため"
+      },
+      {
+        "romaji": "naru",
+        "reading": "なる"
+      },
+      {
+        "romaji": "nasu",
+        "reading": "なす"
+      }
+    ]
+  },
+  {
+    "id": 8238,
+    "character": "偉",
+    "meaning_en": "admirable",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "i",
+        "reading": "イ"
+      }
+    ],
+    "kunyomi": [
+      {
+        "romaji": "erai",
+        "reading": "えらい"
+      }
+    ]
+  },
+  {
+    "id": 8240,
+    "character": "維",
+    "meaning_en": "fiber/maintain",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "i",
+        "reading": "イ"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 8241,
+    "character": "緯",
+    "meaning_en": "latitude",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "i",
+        "reading": "イ"
+      }
+    ],
+    "kunyomi": []
+  },
+  {
+    "id": 8242,
+    "character": "壱",
+    "meaning_en": "one (legal)",
+    "jlpt_level": "N1",
+    "onyomi": [
+      {
+        "romaji": "ichi",
+        "reading": "イチ"
+      }
+    ],
+    "kunyomi": []
+  }
+]
