@@ -7,12 +7,14 @@ import { Edit, Trash2, Plus, Search, ChevronLeft, ChevronRight, Filter, ArrowUpD
 import { cn } from '@/lib/utils';
 import { useReactToPrint } from 'react-to-print';
 import ImportModal from './ImportModal';
+import { useToast } from './ToastProvider';
 
 export default function ResourceList({ resourceKey, config, data, meta }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tableRef = useRef(null);
+  const toast = useToast();
   
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
@@ -21,6 +23,8 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [isCustomLimit, setIsCustomLimit] = useState(false);
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+  const [searchDebounce, setSearchDebounce] = useState(null);
   const customInputRef = useRef(null);
 
   useEffect(() => {
@@ -47,27 +51,35 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
 
   const handleClientExport = async (format) => {
     const exportData = data.filter(d => selectedIds.has(d[config.primaryKey]));
-    if (exportData.length === 0) return alert("Please select items.");
-
-    const filename = `${resourceKey}_export_${new Date().toISOString().slice(0,10)}`;
-
-    if (format === 'xlsx' || format === 'csv') {
-        const XLSX = await import('xlsx');
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Data");
-        XLSX.writeFile(wb, `${filename}.${format}`);
-    } else if (format === 'pdf') {
-        const jsPDF = (await import('jspdf')).default;
-        const autoTable = (await import('jspdf-autotable')).default;
-        const doc = new jsPDF();
-        const headers = config.columns.map(c => c.label);
-        const body = exportData.map(row => config.columns.map(c => String(row[c.key] || '')));
-        doc.text(`${config.label} Selection Report`, 14, 15);
-        autoTable(doc, { head: [headers], body, startY: 20, theme: 'striped' });
-        doc.save(`${filename}.pdf`);
+    if (exportData.length === 0) {
+      toast.warning('Please select items to export');
+      return;
     }
-    setShowExportMenu(false);
+
+    try {
+      const filename = `${resourceKey}_export_${new Date().toISOString().slice(0,10)}`;
+
+      if (format === 'xlsx' || format === 'csv') {
+          const XLSX = await import('xlsx');
+          const ws = XLSX.utils.json_to_sheet(exportData);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Data");
+          XLSX.writeFile(wb, `${filename}.${format}`);
+      } else if (format === 'pdf') {
+          const jsPDF = (await import('jspdf')).default;
+          const autoTable = (await import('jspdf-autotable')).default;
+          const doc = new jsPDF();
+          const headers = config.columns.map(c => c.label);
+          const body = exportData.map(row => config.columns.map(c => String(row[c.key] || '')));
+          doc.text(`${config.label} Selection Report`, 14, 15);
+          autoTable(doc, { head: [headers], body, startY: 20, theme: 'striped' });
+          doc.save(`${filename}.pdf`);
+      }
+      toast.success(`Exported ${exportData.length} items successfully`);
+      setShowExportMenu(false);
+    } catch (error) {
+      toast.error(`Export failed: ${error.message}`);
+    }
   };
 
   // --- ACTIONS ---
@@ -81,12 +93,95 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`Delete ${selectedIds.size} items?`)) return;
+    if (selectedIds.size === 0) return;
+    
+    const confirmed = confirm(`Delete ${selectedIds.size} items? This action cannot be undone.`);
+    if (!confirmed) return;
+    
     setIsDeleting(true);
     try {
-      await Promise.all(Array.from(selectedIds).map(id => fetch(`/api/admin/${resourceKey}/${id}`, { method: 'DELETE' })));
-      router.refresh(); setSelectedIds(new Set());
-    } catch (e) { alert('Error deleting'); } finally { setIsDeleting(false); }
+      const deletePromises = Array.from(selectedIds).map(id => 
+        fetch(`/api/admin/${resourceKey}/${id}`, { method: 'DELETE' })
+      );
+      
+      await Promise.all(deletePromises);
+      toast.success(`Successfully deleted ${selectedIds.size} items`);
+      setSelectedIds(new Set());
+      router.refresh();
+    } catch (e) {
+      toast.error('Failed to delete items');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = confirm('Delete this item? This action cannot be undone.');
+    if (!confirmed) return;
+    
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/admin/${resourceKey}/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      
+      toast.success('Item deleted successfully');
+      router.refresh();
+    } catch (e) {
+      toast.error('Failed to delete item');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleSort = (column) => {
+    const currentSort = searchParams.get('sort');
+    const currentOrder = searchParams.get('order') || 'asc';
+    
+    if (currentSort === column) {
+      // Toggle order
+      updateParams({ 
+        sort: column, 
+        order: currentOrder === 'asc' ? 'desc' : 'asc' 
+      });
+    } else {
+      // New column, default to asc
+      updateParams({ sort: column, order: 'asc' });
+    }
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchInput(value);
+    
+    // Clear previous timeout
+    if (searchDebounce) clearTimeout(searchDebounce);
+    
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      updateParams({ search: value, page: '1' });
+    }, 500);
+    
+    setSearchDebounce(timeout);
+  };
+
+  const handleLimitChange = (value) => {
+    if (value === 'custom') {
+      setIsCustomLimit(true);
+      setTimeout(() => customInputRef.current?.focus(), 100);
+    } else if (value === 'all') {
+      updateParams({ limit: meta.total, page: '1' });
+    } else {
+      updateParams({ limit: value, page: '1' });
+    }
+  };
+
+  const handleCustomLimitSubmit = (e) => {
+    const value = parseInt(e.target.value);
+    if (value > 0 && value <= meta.total) {
+      updateParams({ limit: value, page: '1' });
+      setIsCustomLimit(false);
+    } else {
+      toast.warning(`Limit must be between 1 and ${meta.total}`);
+    }
   };
 
   const handleSelectRow = (id) => {
@@ -149,7 +244,13 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="text" placeholder="Search records..." defaultValue={searchParams.get('search')?.toString()} onChange={(e) => updateParams({search: e.target.value, page: '1'})} className="w-full rounded-2xl border-none bg-transparent pl-12 pr-4 py-3 text-sm font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:ring-0" />
+            <input 
+              type="text" 
+              placeholder="Search records..." 
+              value={searchInput}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full rounded-2xl border-none bg-transparent pl-12 pr-4 py-3 text-sm font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:ring-0" 
+            />
           </div>
           <button onClick={() => setShowFilters(!showFilters)} className={cn("flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-bold transition-all", showFilters ? "bg-indigo-600 text-white shadow-lg" : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400")}><Filter size={16} /> Filters</button>
         </div>

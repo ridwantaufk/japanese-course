@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import FuriganaText from "./FuriganaText";
 import { formatTitle } from "@/lib/learningUtils";
+import { saveQuizProgress, getQuizProgress } from "@/lib/progressTracking";
 
 export default function QuizRunner({ initialData }) {
   const [activeQuiz, setActiveQuiz] = useState(null);
@@ -23,6 +24,8 @@ export default function QuizRunner({ initialData }) {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [playingAudio, setPlayingAudio] = useState(null);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [error, setError] = useState(null);
 
   const playAudio = (audioUrl, id, text) => {
     if (!audioUrl) {
@@ -41,14 +44,25 @@ export default function QuizRunner({ initialData }) {
   };
 
   const startQuiz = async (quiz) => {
+    setLoadingQuestions(true);
+    setError(null);
+
     try {
       // Fetch real questions from database
       const response = await fetch(`/api/quiz/${quiz.id}/questions`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
       const questions = data.questions || [];
 
       if (questions.length === 0) {
-        alert("No questions available for this quiz.");
+        setError(
+          "No questions available for this quiz. Please try another one."
+        );
+        setLoadingQuestions(false);
         return;
       }
 
@@ -58,9 +72,11 @@ export default function QuizRunner({ initialData }) {
       setShowResult(false);
       setIsAnswered(false);
       setSelectedAnswer(null);
+      setLoadingQuestions(false);
     } catch (error) {
       console.error("Failed to fetch quiz questions:", error);
-      alert("Failed to load quiz. Please try again.");
+      setError(`Failed to load quiz: ${error.message}`);
+      setLoadingQuestions(false);
     }
   };
 
@@ -102,8 +118,49 @@ export default function QuizRunner({ initialData }) {
     return (order[a] || 99) - (order[b] || 99);
   });
 
+  // Loading Modal
+  if (loadingQuestions) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-20 space-y-6">
+        <div className="inline-block p-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 animate-pulse">
+          <BrainCircuit size={64} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Loading Questions...
+        </h2>
+        <p className="text-slate-500 dark:text-slate-400">
+          Please wait while we prepare your quiz
+        </p>
+      </div>
+    );
+  }
+
+  // Error Display
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-20 space-y-6">
+        <div className="inline-block p-6 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600">
+          <X size={64} />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Oops!
+        </h2>
+        <p className="text-slate-600 dark:text-slate-400">{error}</p>
+        <button
+          onClick={() => setError(null)}
+          className="px-6 py-3 rounded-full bg-slate-900 text-white font-bold hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+        >
+          Back to Quiz List
+        </button>
+      </div>
+    );
+  }
+
   if (activeQuiz) {
     if (showResult) {
+      // Save quiz progress
+      saveQuizProgress(activeQuiz.id, score, activeQuiz.questions.length);
+
       return (
         <div className="max-w-md mx-auto text-center space-y-8 py-12 animate-in zoom-in duration-500">
           <div className="relative inline-block">

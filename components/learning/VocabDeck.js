@@ -1,27 +1,45 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
-import LevelSelector from './LevelSelector';
-import FuriganaText from './FuriganaText';
-import { Volume2, RotateCcw, Check, X, Trophy, Play, Settings2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useEffect, useMemo } from "react";
+import LevelSelector from "./LevelSelector";
+import FuriganaText from "./FuriganaText";
+import {
+  Volume2,
+  RotateCcw,
+  Check,
+  X,
+  Trophy,
+  Play,
+  Settings2,
+  BookOpen,
+  Sparkles,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { saveVocabProgress, getVocabProgress } from "@/lib/progressTracking";
 
 export default function VocabDeck({ initialData }) {
-  const [level, setLevel] = useState('N5');
-  
+  const [level, setLevel] = useState("N5");
+
   // Session State
-  const [mode, setMode] = useState('setup'); // setup, study, summary
+  const [mode, setMode] = useState("setup"); // setup, study, summary
   const [queue, setQueue] = useState([]); // Cards to study
   const [currentCard, setCurrentCard] = useState(null);
   const [isFlipped, setIsFlipped] = useState(false);
-  
+  const [audioError, setAudioError] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   // Stats
   const [correctCount, setCorrectCount] = useState(0);
   const [wrongCount, setWrongCount] = useState(0);
 
   // Filter Data Source
   const levelData = useMemo(() => {
-    return initialData.filter(v => String(v.jlpt_level || '').toUpperCase().trim() === level);
+    return initialData.filter(
+      (v) =>
+        String(v.jlpt_level || "")
+          .toUpperCase()
+          .trim() === level
+    );
   }, [initialData, level]);
 
   // --- ACTIONS ---
@@ -30,31 +48,34 @@ export default function VocabDeck({ initialData }) {
     // Shuffle and pick N cards
     const shuffled = [...levelData].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, count);
-    
+
     setQueue(selected);
     setCurrentCard(selected[0]);
     setCorrectCount(0);
     setWrongCount(0);
     setIsFlipped(false);
-    setMode('study');
+    setMode("study");
   };
 
   const handleGrade = (isCorrect) => {
-    // 1. Update Stats
-    if (isCorrect) setCorrectCount(prev => prev + 1);
-    else setWrongCount(prev => prev + 1);
+    // 1. Save progress
+    saveVocabProgress(currentCard.id, isCorrect);
 
-    // 2. Manage Queue
+    // 2. Update Stats
+    if (isCorrect) setCorrectCount((prev) => prev + 1);
+    else setWrongCount((prev) => prev + 1);
+
+    // 3. Manage Queue
     // If correct, remove from queue. If wrong, re-queue it at the end (Spaced Repetition Lite)
     const remainingQueue = queue.slice(1);
-    
+
     if (!isCorrect) {
       remainingQueue.push(currentCard); // Re-insert at end
     }
 
-    // 3. Move to next
+    // 4. Move to next
     if (remainingQueue.length === 0) {
-      setMode('summary');
+      setMode("summary");
     } else {
       setQueue(remainingQueue);
       setCurrentCard(remainingQueue[0]);
@@ -64,7 +85,36 @@ export default function VocabDeck({ initialData }) {
 
   const playAudio = (e) => {
     e?.stopPropagation();
-    if (currentCard?.audio_url) new Audio(currentCard.audio_url).play().catch(() => {});
+    if (!currentCard?.audio_url) {
+      // Fallback to Web Speech API
+      if ("speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(currentCard.word);
+        utterance.lang = "ja-JP";
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+
+    setIsPlaying(true);
+    setAudioError(false);
+    const audio = new Audio(currentCard.audio_url);
+
+    audio
+      .play()
+      .then(() => {
+        audio.onended = () => setIsPlaying(false);
+      })
+      .catch((e) => {
+        console.warn("Audio error:", e);
+        setAudioError(true);
+        setIsPlaying(false);
+        // Fallback to speech synthesis
+        if ("speechSynthesis" in window) {
+          const utterance = new SpeechSynthesisUtterance(currentCard.word);
+          utterance.lang = "ja-JP";
+          window.speechSynthesis.speak(utterance);
+        }
+      });
   };
 
   // Auto-play audio on flip
@@ -74,204 +124,310 @@ export default function VocabDeck({ initialData }) {
     }
   }, [isFlipped, currentCard]);
 
-
   // --- RENDERERS ---
 
   // 1. SETUP MODE
-  if (mode === 'setup') {
+  if (mode === "setup") {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-8 animate-in fade-in zoom-in duration-500">
         <div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2">Vocabulary Training</h1>
-            <p className="text-slate-500 dark:text-slate-400">Choose your level and start an active recall session.</p>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-2">
+            Vocabulary Training
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">
+            Choose your level and start an active recall session.
+          </p>
         </div>
 
         <LevelSelector currentLevel={level} onSelect={setLevel} />
 
         <div className="bg-white dark:bg-[#0f172a] rounded-3xl p-8 shadow-xl border border-slate-200 dark:border-white/5">
-            <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Available Words: {levelData.length}</p>
-            
-            {levelData.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {[10, 20, 50].map(count => (
-                        <button 
-                            key={count}
-                            onClick={() => startSession(count)}
-                            className="group flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-slate-100 hover:border-indigo-500 hover:bg-indigo-50 dark:border-white/10 dark:hover:bg-indigo-900/20 transition-all"
-                        >
-                            <span className="text-3xl font-black text-slate-700 dark:text-white group-hover:text-indigo-600 mb-1">{count}</span>
-                            <span className="text-xs font-bold text-slate-400 uppercase">Words</span>
-                        </button>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-slate-400">No vocabulary found for this level.</p>
-            )}
+          <p className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">
+            Available Words: {levelData.length}
+          </p>
+
+          {levelData.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[10, 20, 50].map((count) => (
+                <button
+                  key={count}
+                  onClick={() => startSession(count)}
+                  className="group flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-slate-100 hover:border-indigo-500 hover:bg-indigo-50 dark:border-white/10 dark:hover:bg-indigo-900/20 transition-all"
+                >
+                  <span className="text-3xl font-black text-slate-700 dark:text-white group-hover:text-indigo-600 mb-1">
+                    {count}
+                  </span>
+                  <span className="text-xs font-bold text-slate-400 uppercase">
+                    Words
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-slate-400">
+              No vocabulary found for this level.
+            </p>
+          )}
         </div>
       </div>
     );
   }
 
   // 2. SUMMARY MODE
-  if (mode === 'summary') {
-    const accuracy = Math.round((correctCount / (correctCount + wrongCount)) * 100) || 0;
+  if (mode === "summary") {
+    const accuracy =
+      Math.round((correctCount / (correctCount + wrongCount)) * 100) || 0;
     return (
-        <div className="max-w-md mx-auto text-center space-y-8 py-12 animate-in zoom-in duration-500">
-            <div className="relative inline-block">
-                <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full"></div>
-                <Trophy size={100} className="relative text-yellow-500 mx-auto drop-shadow-lg" />
-            </div>
-            
-            <div>
-                <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">Session Complete!</h2>
-                <p className="text-slate-500 dark:text-slate-400">You've reviewed all cards in this set.</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-2xl border border-green-100 dark:border-green-900/50">
-                    <p className="text-3xl font-black text-green-600">{correctCount}</p>
-                    <p className="text-xs font-bold text-green-700 uppercase">Mastered</p>
-                </div>
-                <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-2xl border border-red-100 dark:border-red-900/50">
-                    <p className="text-3xl font-black text-red-600">{wrongCount}</p>
-                    <p className="text-xs font-bold text-red-700 uppercase">Need Review</p>
-                </div>
-            </div>
-
-            <button 
-                onClick={() => setMode('setup')}
-                className="flex items-center justify-center gap-2 w-full px-8 py-4 rounded-full bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 hover:scale-105 transition-all dark:bg-white dark:text-slate-900"
-            >
-                <RotateCcw size={18} /> Start New Session
-            </button>
+      <div className="max-w-md mx-auto text-center space-y-8 py-12 animate-in zoom-in duration-500">
+        <div className="relative inline-block">
+          <div className="absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full"></div>
+          <Trophy
+            size={100}
+            className="relative text-yellow-500 mx-auto drop-shadow-lg"
+          />
         </div>
+
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
+            Session Complete!
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400">
+            You've reviewed all cards in this set.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-2xl border border-green-100 dark:border-green-900/50">
+            <p className="text-3xl font-black text-green-600">{correctCount}</p>
+            <p className="text-xs font-bold text-green-700 uppercase">
+              Mastered
+            </p>
+          </div>
+          <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-2xl border border-red-100 dark:border-red-900/50">
+            <p className="text-3xl font-black text-red-600">{wrongCount}</p>
+            <p className="text-xs font-bold text-red-700 uppercase">
+              Need Review
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setMode("setup")}
+          className="flex items-center justify-center gap-2 w-full px-8 py-4 rounded-full bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 hover:scale-105 transition-all dark:bg-white dark:text-slate-900"
+        >
+          <RotateCcw size={18} /> Start New Session
+        </button>
+      </div>
     );
   }
 
   // 3. STUDY MODE (Flashcard)
   const totalCards = correctCount + queue.length; // Approximate total for progress bar
-  const progress = ((correctCount) / totalCards) * 100; // Only counts mastered cards
+  const progress = (correctCount / totalCards) * 100; // Only counts mastered cards
 
   return (
     <div className="space-y-8 max-w-xl mx-auto">
       {/* Header Stats */}
       <div className="flex justify-between items-end px-4">
         <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">{level}</span>
-                Study Session
-            </h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-md">
+              {level}
+            </span>
+            Study Session
+          </h2>
         </div>
         <div className="text-right">
-            <span className="text-sm font-bold text-slate-400">{queue.length} cards left</span>
+          <span className="text-sm font-bold text-slate-400">
+            {queue.length} cards left
+          </span>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden dark:bg-white/10 mx-4">
-         <div className="h-full bg-green-500 transition-all duration-500 ease-out" style={{ width: `${(correctCount / (correctCount + queue.length + (wrongCount > 0 ? 0 : 0))) * 100}%` }}></div>
+        <div
+          className="h-full bg-green-500 transition-all duration-500 ease-out"
+          style={{
+            width: `${
+              (correctCount /
+                (correctCount + queue.length + (wrongCount > 0 ? 0 : 0))) *
+              100
+            }%`,
+          }}
+        ></div>
       </div>
 
       {/* The Card */}
       <div className="relative h-[450px] w-full perspective-1000 group">
-          <div 
-            className={cn(
-              "relative h-full w-full transition-all duration-500 transform-style-3d shadow-2xl rounded-[2rem]",
-              isFlipped ? "rotate-y-180" : ""
-            )}
-          >
-            {/* FRONT (Question) */}
-            <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center rounded-[2rem] bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-8">
-              <span className="absolute top-8 text-xs font-bold uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full">
-                Word
-              </span>
-              
-              <div className="text-7xl font-black text-slate-800 dark:text-white mb-4 text-center">
+        <div
+          className={cn(
+            "relative h-full w-full transition-all duration-500 transform-style-3d shadow-2xl rounded-[2rem]",
+            isFlipped ? "rotate-y-180" : ""
+          )}
+        >
+          {/* FRONT (Question) */}
+          <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center rounded-[2rem] bg-gradient-to-br from-white to-slate-50 dark:from-[#0f172a] dark:to-[#1e293b] border border-slate-200 dark:border-white/10 p-8 shadow-inner">
+            <span className="absolute top-6 text-xs font-bold uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full flex items-center gap-1">
+              <BookOpen size={12} /> Vocabulary Card
+            </span>
+
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <div className="text-7xl sm:text-8xl font-black text-slate-800 dark:text-white mb-4 text-center animate-in zoom-in duration-500">
                 {currentCard.word}
               </div>
-              
+
+              {/* Furigana if available */}
+              {currentCard.furigana &&
+                currentCard.furigana !== currentCard.word && (
+                  <div className="text-2xl text-slate-500 dark:text-slate-400 mb-4">
+                    ({currentCard.furigana})
+                  </div>
+                )}
+
               {/* Romaji hint */}
               {currentCard.romaji && (
-                <div className="text-xl font-mono text-slate-400 dark:text-slate-500 mb-6">
+                <div className="text-xl font-mono text-slate-400 dark:text-slate-500 mb-2 flex items-center gap-2">
+                  <Sparkles size={16} className="text-yellow-500" />
                   {currentCard.romaji}
                 </div>
               )}
-              
-              <button 
-                onClick={() => setIsFlipped(true)}
-                className="mt-8 px-8 py-3 rounded-full bg-slate-900 text-white font-bold hover:bg-slate-800 hover:scale-105 transition-all dark:bg-white dark:text-slate-900"
+
+              {/* Word category hint */}
+              {currentCard.word_category && (
+                <div className="text-sm text-slate-400 dark:text-slate-500 italic mt-2">
+                  ({currentCard.word_category})
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setIsFlipped(true)}
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold hover:from-indigo-700 hover:to-violet-700 hover:scale-105 transition-all shadow-lg"
+            >
+              <span className="flex items-center gap-2">
+                <RotateCcw size={18} />
+                Show Meaning
+              </span>
+            </button>
+          </div>
+
+          {/* BACK (Answer & Grading) */}
+          <div className="absolute inset-0 backface-hidden rotate-y-180 flex flex-col rounded-[2rem] bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 text-white p-6 shadow-2xl overflow-hidden">
+            {/* Decorative background */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-300 rounded-full blur-3xl"></div>
+            </div>
+
+            <div className="relative flex-1 flex flex-col items-center justify-center w-full space-y-4 overflow-y-auto">
+              {/* Main Word Display */}
+              <div className="text-center space-y-3">
+                <FuriganaText
+                  text={currentCard.word}
+                  furigana={currentCard.furigana}
+                  romaji={currentCard.romaji}
+                  wordBreakdown={currentCard.word_breakdown}
+                  showRomaji={false}
+                  className="text-5xl sm:text-6xl font-black block drop-shadow-lg"
+                />
+
+                {/* Audio Control */}
+                <div className="flex items-center justify-center gap-3">
+                  <div className="font-mono bg-black/20 px-4 py-2 rounded-full text-sm backdrop-blur-sm">
+                    {currentCard.romaji}
+                  </div>
+                  <button
+                    onClick={playAudio}
+                    className={cn(
+                      "p-2 rounded-full transition-all",
+                      isPlaying
+                        ? "bg-pink-500 animate-pulse"
+                        : "bg-white/20 hover:bg-white/30"
+                    )}
+                  >
+                    <Volume2 size={20} />
+                  </button>
+                </div>
+
+                {audioError && (
+                  <p className="text-xs text-yellow-300 bg-yellow-900/20 px-3 py-1 rounded-full">
+                    Audio not available, using speech synthesis
+                  </p>
+                )}
+
+                <div className="h-px w-24 bg-white/30 mx-auto my-3"></div>
+
+                {/* Meaning */}
+                <div className="bg-black/10 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+                  <p className="text-2xl font-bold leading-relaxed mb-1">
+                    {currentCard.meaning_id}
+                  </p>
+                  <p className="text-sm opacity-80 italic">
+                    {currentCard.word_category}
+                  </p>
+                </div>
+
+                {/* Word Breakdown if available */}
+                {currentCard.word_breakdown &&
+                  currentCard.word_breakdown.length > 0 && (
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                      <p className="text-xs uppercase tracking-wider opacity-70 mb-3 flex items-center justify-center gap-2">
+                        <Sparkles size={12} /> Word Components
+                      </p>
+                      <div className="space-y-2">
+                        {currentCard.word_breakdown.map((wb, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between text-sm bg-white/5 px-3 py-2 rounded-lg"
+                          >
+                            <span className="font-bold">{wb.word}</span>
+                            <span className="text-xs opacity-70 mx-2">
+                              ({wb.reading || wb.romaji})
+                            </span>
+                            <span className="text-right">{wb.meaning}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+
+            {/* Grading Buttons */}
+            <div className="w-full grid grid-cols-2 gap-4 mt-6">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGrade(false);
+                }}
+                className="flex flex-col items-center justify-center gap-1 p-4 rounded-2xl bg-red-500/20 hover:bg-red-500 hover:text-white border border-red-400/30 transition-all active:scale-95"
               >
-                Reveal Answer
+                <X size={24} className="mb-1" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Lupa / Sulit
+                </span>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGrade(true);
+                }}
+                className="flex flex-col items-center justify-center gap-1 p-4 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500 hover:text-white border border-emerald-400/30 transition-all active:scale-95"
+              >
+                <Check size={24} className="mb-1" />
+                <span className="text-xs font-black uppercase tracking-wider">
+                  Ingat / Mudah
+                </span>
               </button>
             </div>
-
-            {/* BACK (Answer & Grading) */}
-            <div className="absolute inset-0 backface-hidden rotate-y-180 flex flex-col items-center justify-between rounded-[2rem] bg-gradient-to-br from-indigo-600 to-violet-700 text-white p-8">
-              
-              <div className="flex-1 flex flex-col items-center justify-center w-full">
-                <div className="text-center space-y-4">
-                    <FuriganaText 
-                      text={currentCard.word} 
-                      furigana={currentCard.furigana}
-                      romaji={currentCard.romaji}
-                      wordBreakdown={currentCard.word_breakdown}
-                      showRomaji={false}
-                      className="text-5xl font-bold block drop-shadow-md" 
-                    />
-                    <div className="flex items-center justify-center gap-2 opacity-90 font-mono bg-black/20 px-4 py-2 rounded-full text-sm">
-                        {currentCard.romaji}
-                        <button onClick={playAudio} className="hover:text-pink-300 transition-colors"><Volume2 size={16} /></button>
-                    </div>
-                    
-                    <div className="h-px w-20 bg-white/30 mx-auto my-4"></div>
-                    
-                    <p className="text-2xl font-bold leading-relaxed">
-                        {currentCard.meaning_id}
-                    </p>
-                    <p className="text-sm opacity-70 italic">{currentCard.word_category}</p>
-                    
-                    {/* Word Breakdown if available */}
-                    {currentCard.word_breakdown && currentCard.word_breakdown.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-white/20">
-                        <p className="text-xs uppercase tracking-wider opacity-60 mb-2">Word Parts</p>
-                        <div className="flex flex-wrap justify-center gap-2">
-                          {currentCard.word_breakdown.map((wb, idx) => (
-                            <span key={idx} className="text-xs bg-white/10 px-3 py-1 rounded-full">
-                              {wb.word} = {wb.meaning}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                </div>
-              </div>
-
-              {/* Grading Buttons */}
-              <div className="w-full grid grid-cols-2 gap-4 mt-6">
-                <button 
-                    onClick={(e) => { e.stopPropagation(); handleGrade(false); }}
-                    className="flex flex-col items-center justify-center gap-1 p-4 rounded-2xl bg-red-500/20 hover:bg-red-500 hover:text-white border border-red-400/30 transition-all active:scale-95"
-                >
-                    <X size={24} className="mb-1" />
-                    <span className="text-xs font-black uppercase tracking-wider">Lupa / Sulit</span>
-                </button>
-                <button 
-                    onClick={(e) => { e.stopPropagation(); handleGrade(true); }}
-                    className="flex flex-col items-center justify-center gap-1 p-4 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500 hover:text-white border border-emerald-400/30 transition-all active:scale-95"
-                >
-                    <Check size={24} className="mb-1" />
-                    <span className="text-xs font-black uppercase tracking-wider">Ingat / Mudah</span>
-                </button>
-              </div>
-
-            </div>
           </div>
+        </div>
       </div>
-      
+
       <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">
         {isFlipped ? "Grade yourself honestly" : "Think of the meaning first"}
       </p>
-
     </div>
   );
 }
