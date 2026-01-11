@@ -1,7 +1,7 @@
-import { Suspense } from 'react';
-import { query } from '@/lib/db';
-import VocabularyList from '@/components/learning/VocabularyList';
-import { Loader2 } from 'lucide-react';
+import { Suspense } from "react";
+import { query } from "@/lib/db";
+import VocabularyList from "@/components/learning/VocabularyList";
+import { Loader2 } from "lucide-react";
 
 async function getVocabulary() {
   try {
@@ -34,7 +34,7 @@ async function getVocabulary() {
     `);
     return res.rows;
   } catch (e) {
-    console.error('Error fetching vocabulary:', e);
+    console.error("Error fetching vocabulary:", e);
     return [];
   }
 }
@@ -49,7 +49,7 @@ function LoadingFallback() {
 
 export default async function VocabularyPage() {
   const data = await getVocabulary();
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Suspense fallback={<LoadingFallback />}>

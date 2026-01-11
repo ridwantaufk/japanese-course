@@ -189,19 +189,22 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
     }
   }, [currentIndex, phase, config.difficulty]);
 
-  const playSound = useCallback((type) => {
-    if (!config.playSound) return;
-    const sounds = {
-      correct: "/sounds/correct.mp3",
-      wrong: "/sounds/wrong.mp3",
-      complete: "/sounds/complete.mp3",
-      tick: "/sounds/tick.mp3",
-    };
-    if (audioRef.current) {
-      audioRef.current.src = sounds[type] || "";
-      audioRef.current.play().catch(() => {});
-    }
-  }, [config.playSound]);
+  const playSound = useCallback(
+    (type) => {
+      if (!config.playSound) return;
+      const sounds = {
+        correct: "/sounds/correct.mp3",
+        wrong: "/sounds/wrong.mp3",
+        complete: "/sounds/complete.mp3",
+        tick: "/sounds/tick.mp3",
+      };
+      if (audioRef.current) {
+        audioRef.current.src = sounds[type] || "";
+        audioRef.current.play().catch(() => {});
+      }
+    },
+    [config.playSound]
+  );
 
   const triggerConfetti = () => {
     confetti({

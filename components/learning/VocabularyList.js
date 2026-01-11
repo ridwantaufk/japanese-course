@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useTransition,
+  useCallback,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import LevelSelector from "./LevelSelector";
@@ -71,12 +77,12 @@ export default function VocabularyList({ initialData }) {
   // Scroll lock when modal is open
   useEffect(() => {
     if (selectedVocab) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [selectedVocab]);
 
@@ -109,14 +115,14 @@ export default function VocabularyList({ initialData }) {
   const playAudio = useCallback(async (text, url) => {
     try {
       // Cancel any ongoing speech before starting new one
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
-      await playAudioWithFallback(url, text, { lang: 'ja-JP', rate: 0.85 });
+      await playAudioWithFallback(url, text, { lang: "ja-JP", rate: 0.85 });
     } catch (e) {
       // Ignore interrupted errors as they're expected when user clicks rapidly
-      if (!e.message?.includes('interrupted')) {
-        console.error('Audio playback failed:', e);
+      if (!e.message?.includes("interrupted")) {
+        console.error("Audio playback failed:", e);
       }
     }
   }, []);
@@ -124,7 +130,7 @@ export default function VocabularyList({ initialData }) {
   // Get unique values for filters
   const wordTypes = useMemo(() => {
     const types = new Set();
-    initialData.forEach(v => {
+    initialData.forEach((v) => {
       if (v.word_type) types.add(v.word_type);
     });
     return Array.from(types).sort();
@@ -132,7 +138,7 @@ export default function VocabularyList({ initialData }) {
 
   const categories = useMemo(() => {
     const cats = new Set();
-    initialData.forEach(v => {
+    initialData.forEach((v) => {
       if (v.category) cats.add(v.category);
     });
     return Array.from(cats).sort();
@@ -157,28 +163,31 @@ export default function VocabularyList({ initialData }) {
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(v =>
-        v.word?.toLowerCase().includes(query) ||
-        v.reading?.toLowerCase().includes(query) ||
-        v.romaji?.toLowerCase().includes(query) ||
-        v.meaning_id?.toLowerCase().includes(query) ||
-        v.meaning_en?.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (v) =>
+          v.word?.toLowerCase().includes(query) ||
+          v.reading?.toLowerCase().includes(query) ||
+          v.romaji?.toLowerCase().includes(query) ||
+          v.meaning_id?.toLowerCase().includes(query) ||
+          v.meaning_en?.toLowerCase().includes(query)
       );
     }
 
     // Word type filter
     if (wordTypeFilter !== "all") {
-      filtered = filtered.filter(v => v.word_type === wordTypeFilter);
+      filtered = filtered.filter((v) => v.word_type === wordTypeFilter);
     }
 
     // Category filter
     if (categoryFilter !== "all") {
-      filtered = filtered.filter(v => v.category === categoryFilter);
+      filtered = filtered.filter((v) => v.category === categoryFilter);
     }
 
     // Sort
     if (sortBy === "frequency") {
-      filtered.sort((a, b) => (a.frequency_rank || 9999) - (b.frequency_rank || 9999));
+      filtered.sort(
+        (a, b) => (a.frequency_rank || 9999) - (b.frequency_rank || 9999)
+      );
     } else if (sortBy === "alphabetical") {
       filtered.sort((a, b) => (a.word || "").localeCompare(b.word || ""));
     } else if (sortBy === "difficulty") {
@@ -190,12 +199,20 @@ export default function VocabularyList({ initialData }) {
     }
 
     return filtered;
-  }, [initialData, level, searchQuery, wordTypeFilter, categoryFilter, sortBy, calculateDifficulty]);
+  }, [
+    initialData,
+    level,
+    searchQuery,
+    wordTypeFilter,
+    categoryFilter,
+    sortBy,
+    calculateDifficulty,
+  ]);
 
   const getLevelStats = () => {
     const total = filteredVocabulary.length;
-    const types = new Set(filteredVocabulary.map(v => v.word_type)).size;
-    const categories = new Set(filteredVocabulary.map(v => v.category)).size;
+    const types = new Set(filteredVocabulary.map((v) => v.word_type)).size;
+    const categories = new Set(filteredVocabulary.map((v) => v.category)).size;
     return { total, types, categories };
   };
 
@@ -223,7 +240,10 @@ export default function VocabularyList({ initialData }) {
             </p>
           </div>
 
-          <InteractiveVocabularyQuiz vocabularyData={filteredVocabulary} level={level} />
+          <InteractiveVocabularyQuiz
+            vocabularyData={filteredVocabulary}
+            level={level}
+          />
         </div>
 
         {/* Level Selector */}
@@ -237,34 +257,56 @@ export default function VocabularyList({ initialData }) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
           <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-2 border-indigo-200 dark:border-indigo-800">
             <div className="flex items-center gap-2 mb-1">
-              <BookOpen size={16} className="text-indigo-600 dark:text-indigo-400" />
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">Total Words</span>
+              <BookOpen
+                size={16}
+                className="text-indigo-600 dark:text-indigo-400"
+              />
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                Total Words
+              </span>
             </div>
-            <div className="text-2xl font-black text-indigo-900 dark:text-indigo-100">{stats.total}</div>
+            <div className="text-2xl font-black text-indigo-900 dark:text-indigo-100">
+              {stats.total}
+            </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-2 border-purple-200 dark:border-purple-800">
             <div className="flex items-center gap-2 mb-1">
               <Tag size={16} className="text-purple-600 dark:text-purple-400" />
-              <span className="text-xs font-bold text-purple-600 dark:text-purple-400">Word Types</span>
+              <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                Word Types
+              </span>
             </div>
-            <div className="text-2xl font-black text-purple-900 dark:text-purple-100">{stats.types}</div>
+            <div className="text-2xl font-black text-purple-900 dark:text-purple-100">
+              {stats.types}
+            </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-900/20 dark:to-pink-800/20 border-2 border-pink-200 dark:border-pink-800">
             <div className="flex items-center gap-2 mb-1">
               <Layers size={16} className="text-pink-600 dark:text-pink-400" />
-              <span className="text-xs font-bold text-pink-600 dark:text-pink-400">Categories</span>
+              <span className="text-xs font-bold text-pink-600 dark:text-pink-400">
+                Categories
+              </span>
             </div>
-            <div className="text-2xl font-black text-pink-900 dark:text-pink-100">{stats.categories}</div>
+            <div className="text-2xl font-black text-pink-900 dark:text-pink-100">
+              {stats.categories}
+            </div>
           </div>
 
           <div className="p-4 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-2 border-orange-200 dark:border-orange-800">
             <div className="flex items-center gap-2 mb-1">
-              <Star size={16} className="text-orange-600 dark:text-orange-400" />
-              <span className="text-xs font-bold text-orange-600 dark:text-orange-400">Level</span>
+              <Star
+                size={16}
+                className="text-orange-600 dark:text-orange-400"
+              />
+              <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
+                Level
+              </span>
             </div>
-            <div className="text-2xl font-black text-orange-900 dark:text-orange-100">{level}</div>
+            <div className="text-2xl font-black text-orange-900 dark:text-orange-100">
+              {level}
+            </div>
           </div>
         </div>
       </div>
@@ -273,7 +315,10 @@ export default function VocabularyList({ initialData }) {
       <div className="mb-6 space-y-4">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            size={20}
+          />
           <input
             type="text"
             value={searchQuery}
@@ -292,8 +337,10 @@ export default function VocabularyList({ initialData }) {
             className="px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors"
           >
             <option value="all">All Types</option>
-            {wordTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
+            {wordTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
             ))}
           </select>
 
@@ -304,8 +351,10 @@ export default function VocabularyList({ initialData }) {
             className="px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-medium focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors"
           >
             <option value="all">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
 
@@ -321,7 +370,10 @@ export default function VocabularyList({ initialData }) {
           </select>
 
           {/* Clear Filters */}
-          {(searchQuery || wordTypeFilter !== "all" || categoryFilter !== "all" || sortBy !== "frequency") && (
+          {(searchQuery ||
+            wordTypeFilter !== "all" ||
+            categoryFilter !== "all" ||
+            sortBy !== "frequency") && (
             <button
               onClick={() => {
                 setSearchQuery("");
@@ -365,12 +417,14 @@ export default function VocabularyList({ initialData }) {
                   <div className="text-2xl font-black text-slate-900 dark:text-white mb-1">
                     {vocab.word}
                   </div>
-                  {vocab.reading && vocab.reading !== '-' && vocab.reading !== vocab.word && (
-                    <div className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                      {vocab.reading}
-                    </div>
-                  )}
-                  {vocab.romaji && vocab.romaji !== '-' && (
+                  {vocab.reading &&
+                    vocab.reading !== "-" &&
+                    vocab.reading !== vocab.word && (
+                      <div className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                        {vocab.reading}
+                      </div>
+                    )}
+                  {vocab.romaji && vocab.romaji !== "-" && (
                     <div className="text-xs font-mono text-slate-400 mt-1">
                       {vocab.romaji}
                     </div>
@@ -413,7 +467,8 @@ export default function VocabularyList({ initialData }) {
                 <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
                   <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                     <MessageSquare size={12} />
-                    {vocab.example_count} {vocab.example_count === 1 ? 'example' : 'examples'}
+                    {vocab.example_count}{" "}
+                    {vocab.example_count === 1 ? "example" : "examples"}
                   </div>
                 </div>
               )}
@@ -444,18 +499,22 @@ export default function VocabularyList({ initialData }) {
                 <div className="text-6xl font-black mb-3 drop-shadow-lg">
                   {selectedVocab.word}
                 </div>
-                {selectedVocab.reading && selectedVocab.reading !== '-' && selectedVocab.reading !== selectedVocab.word && (
-                  <div className="text-2xl font-bold mb-2 opacity-90">
-                    {selectedVocab.reading}
-                  </div>
-                )}
-                {selectedVocab.romaji && selectedVocab.romaji !== '-' && (
+                {selectedVocab.reading &&
+                  selectedVocab.reading !== "-" &&
+                  selectedVocab.reading !== selectedVocab.word && (
+                    <div className="text-2xl font-bold mb-2 opacity-90">
+                      {selectedVocab.reading}
+                    </div>
+                  )}
+                {selectedVocab.romaji && selectedVocab.romaji !== "-" && (
                   <div className="text-lg font-mono opacity-75">
                     {selectedVocab.romaji}
                   </div>
                 )}
                 <button
-                  onClick={() => playAudio(selectedVocab.word, selectedVocab.audio_url)}
+                  onClick={() =>
+                    playAudio(selectedVocab.word, selectedVocab.audio_url)
+                  }
                   className="mt-4 px-6 py-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm font-bold flex items-center gap-2 mx-auto transition-colors cursor-pointer"
                 >
                   <Volume2 size={20} />
@@ -542,7 +601,9 @@ export default function VocabularyList({ initialData }) {
                               <FuriganaText text={ex.japanese_text} />
                             </div>
                             <button
-                              onClick={() => playAudio(ex.japanese_text, ex.audio_url)}
+                              onClick={() =>
+                                playAudio(ex.japanese_text, ex.audio_url)
+                              }
                               className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 text-indigo-600 dark:text-indigo-400 transition-colors flex-shrink-0"
                             >
                               <Volume2 size={16} />

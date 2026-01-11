@@ -94,22 +94,22 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  
+
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  
+
   // Speed Challenge
   const [timeLeft, setTimeLeft] = useState(60);
   const [timerActive, setTimerActive] = useState(false);
-  
+
   // Matching Game
   const [selectedPairs, setSelectedPairs] = useState([]);
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [matchingItems, setMatchingItems] = useState([]);
-  
+
   // Review
   const [showReview, setShowReview] = useState(false);
   const [score, setScore] = useState(0);
@@ -121,20 +121,26 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   const handleFinishQuiz = useCallback(() => {
     setTimerActive(false);
     setShowReview(true);
-    
-    if (score / (selectedMode?.id === "matching" ? matchingItems.length / 2 : questions.length) >= 0.8) {
+
+    if (
+      score /
+        (selectedMode?.id === "matching"
+          ? matchingItems.length / 2
+          : questions.length) >=
+      0.8
+    ) {
       confetti({
         particleCount: 100,
         spread: 70,
@@ -157,14 +163,14 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
   const playAudio = useCallback(async (text, url) => {
     try {
       // Cancel any ongoing speech before starting new one
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
-      await playAudioWithFallback(url, text, { lang: 'ja-JP', rate: 0.85 });
+      await playAudioWithFallback(url, text, { lang: "ja-JP", rate: 0.85 });
     } catch (e) {
       // Ignore interrupted errors as they're expected when user clicks rapidly
-      if (!e.message?.includes('interrupted')) {
-        console.error('Audio playback failed:', e);
+      if (!e.message?.includes("interrupted")) {
+        console.error("Audio playback failed:", e);
       }
     }
   }, []);
@@ -178,63 +184,80 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
     return shuffled;
   };
 
-  const generateQuestions = useCallback((mode, count = 20) => {
-    if (!vocabularyData || vocabularyData.length === 0) return [];
-    
-    const shuffled = shuffleArray(vocabularyData);
-    const selected = shuffled.slice(0, Math.min(count, shuffled.length));
-    
-    const questionList = selected.map((vocab, idx) => {
-      const questionType = mode === "mixed" 
-        ? QUIZ_MODES[Math.floor(Math.random() * (QUIZ_MODES.length - 1))].id
-        : mode;
-      
-      let question = {
-        id: idx,
-        vocab,
-        type: questionType,
-        correctAnswer: null,
-        options: [],
-      };
+  const generateQuestions = useCallback(
+    (mode, count = 20) => {
+      if (!vocabularyData || vocabularyData.length === 0) return [];
 
-      // Generate based on type
-      if (questionType === "flash") {
-        question.correctAnswer = vocab.meaning_id || vocab.meaning_en;
-        question.showWord = Math.random() > 0.5; // Randomize direction
-      } else if (questionType === "multipleChoice") {
-        const otherVocabs = shuffleArray(vocabularyData.filter(v => v.id !== vocab.id)).slice(0, 3);
-        const allOptions = shuffleArray([
-          { text: vocab.meaning_id || vocab.meaning_en, correct: true },
-          ...otherVocabs.map(v => ({ text: v.meaning_id || v.meaning_en, correct: false })),
-        ]);
-        question.options = allOptions;
-        question.correctAnswer = vocab.meaning_id || vocab.meaning_en;
-      } else if (questionType === "typing") {
-        question.correctAnswer = Math.random() > 0.5 ? vocab.word : (vocab.meaning_id || vocab.meaning_en);
-        question.typingMode = question.correctAnswer === vocab.word ? "word" : "meaning";
-      } else if (questionType === "audio") {
-        const otherVocabs = shuffleArray(vocabularyData.filter(v => v.id !== vocab.id)).slice(0, 3);
-        const allOptions = shuffleArray([
-          { text: vocab.word, correct: true },
-          ...otherVocabs.map(v => ({ text: v.word, correct: false })),
-        ]);
-        question.options = allOptions;
-        question.correctAnswer = vocab.word;
-      } else if (questionType === "fillBlank") {
-        // Use example sentence if available, or create simple sentence
-        question.correctAnswer = vocab.word;
-        question.sentence = `_____ は ${vocab.meaning_id || vocab.meaning_en} です。`;
-      }
+      const shuffled = shuffleArray(vocabularyData);
+      const selected = shuffled.slice(0, Math.min(count, shuffled.length));
 
-      return question;
-    });
+      const questionList = selected.map((vocab, idx) => {
+        const questionType =
+          mode === "mixed"
+            ? QUIZ_MODES[Math.floor(Math.random() * (QUIZ_MODES.length - 1))].id
+            : mode;
 
-    return questionList;
-  }, [vocabularyData]);
+        let question = {
+          id: idx,
+          vocab,
+          type: questionType,
+          correctAnswer: null,
+          options: [],
+        };
+
+        // Generate based on type
+        if (questionType === "flash") {
+          question.correctAnswer = vocab.meaning_id || vocab.meaning_en;
+          question.showWord = Math.random() > 0.5; // Randomize direction
+        } else if (questionType === "multipleChoice") {
+          const otherVocabs = shuffleArray(
+            vocabularyData.filter((v) => v.id !== vocab.id)
+          ).slice(0, 3);
+          const allOptions = shuffleArray([
+            { text: vocab.meaning_id || vocab.meaning_en, correct: true },
+            ...otherVocabs.map((v) => ({
+              text: v.meaning_id || v.meaning_en,
+              correct: false,
+            })),
+          ]);
+          question.options = allOptions;
+          question.correctAnswer = vocab.meaning_id || vocab.meaning_en;
+        } else if (questionType === "typing") {
+          question.correctAnswer =
+            Math.random() > 0.5
+              ? vocab.word
+              : vocab.meaning_id || vocab.meaning_en;
+          question.typingMode =
+            question.correctAnswer === vocab.word ? "word" : "meaning";
+        } else if (questionType === "audio") {
+          const otherVocabs = shuffleArray(
+            vocabularyData.filter((v) => v.id !== vocab.id)
+          ).slice(0, 3);
+          const allOptions = shuffleArray([
+            { text: vocab.word, correct: true },
+            ...otherVocabs.map((v) => ({ text: v.word, correct: false })),
+          ]);
+          question.options = allOptions;
+          question.correctAnswer = vocab.word;
+        } else if (questionType === "fillBlank") {
+          // Use example sentence if available, or create simple sentence
+          question.correctAnswer = vocab.word;
+          question.sentence = `_____ は ${
+            vocab.meaning_id || vocab.meaning_en
+          } です。`;
+        }
+
+        return question;
+      });
+
+      return questionList;
+    },
+    [vocabularyData]
+  );
 
   const generateMatchingGame = useCallback(() => {
     if (!vocabularyData || vocabularyData.length === 0) return [];
-    
+
     const selected = shuffleArray(vocabularyData).slice(0, 6);
     const words = selected.map((v, i) => ({
       id: `word-${i}`,
@@ -249,7 +272,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
       type: "meaning",
       pairId: i,
     }));
-    
+
     return shuffleArray([...words, ...meanings]);
   }, [vocabularyData]);
 
@@ -262,7 +285,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
     setInputValue("");
     setScore(0);
     setShowReview(false);
-    
+
     if (mode.id === "matching") {
       const items = generateMatchingGame();
       setMatchingItems(items);
@@ -272,7 +295,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
       const qs = generateQuestions(mode.id);
       setQuestions(qs);
     }
-    
+
     if (mode.id === "speed") {
       setTimeLeft(60);
       setTimerActive(true);
@@ -282,13 +305,16 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
   };
 
   const handleAnswer = (answer, isCorrect) => {
-    const newAnswers = [...userAnswers, { 
-      question: questions[currentIndex], 
-      userAnswer: answer, 
-      correct: isCorrect,
-    }];
+    const newAnswers = [
+      ...userAnswers,
+      {
+        question: questions[currentIndex],
+        userAnswer: answer,
+        correct: isCorrect,
+      },
+    ];
     setUserAnswers(newAnswers);
-    
+
     if (isCorrect) {
       setScore(score + 1);
       confetti({
@@ -297,7 +323,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
         origin: { y: 0.6 },
       });
     }
-    
+
     if (selectedMode?.id === "flash" || selectedMode?.id === "speed") {
       // Auto advance for flash and speed
       setTimeout(() => {
@@ -326,7 +352,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
 
   const handleMatchingClick = (item) => {
     if (matchedPairs.includes(item.pairId)) return;
-    
+
     if (selectedPairs.length === 0) {
       setSelectedPairs([item]);
     } else if (selectedPairs.length === 1) {
@@ -335,7 +361,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
         setSelectedPairs([]);
         return;
       }
-      
+
       if (first.pairId === item.pairId) {
         // Correct match
         setMatchedPairs([...matchedPairs, item.pairId]);
@@ -346,7 +372,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
           spread: 50,
           origin: { y: 0.6 },
         });
-        
+
         if (matchedPairs.length + 1 === matchingItems.length / 2) {
           setTimeout(handleFinishQuiz, 1000);
         }
@@ -379,7 +405,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
       return (
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center max-w-2xl">
-            <div 
+            <div
               className="mb-8 p-12 rounded-3xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-4 border-indigo-200 dark:border-indigo-800 cursor-pointer hover:scale-105 transition-transform"
               onClick={() => setShowAnswer(!showAnswer)}
             >
@@ -436,14 +462,18 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
             {showAnswer && (
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={() => handleAnswer(vocab.meaning_id || vocab.meaning_en, false)}
+                  onClick={() =>
+                    handleAnswer(vocab.meaning_id || vocab.meaning_en, false)
+                  }
                   className="px-8 py-4 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold flex items-center gap-2 transition-colors"
                 >
                   <XCircle size={24} />
                   Wrong
                 </button>
                 <button
-                  onClick={() => handleAnswer(vocab.meaning_id || vocab.meaning_en, true)}
+                  onClick={() =>
+                    handleAnswer(vocab.meaning_id || vocab.meaning_en, true)
+                  }
                   className="px-8 py-4 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-bold flex items-center gap-2 transition-colors"
                 >
                   <Check size={24} />
@@ -486,20 +516,44 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
               {q.options.map((opt, i) => (
                 <button
                   key={i}
-                  onClick={() => !showAnswer && handleAnswer(opt.text, opt.correct)}
+                  onClick={() =>
+                    !showAnswer && handleAnswer(opt.text, opt.correct)
+                  }
                   disabled={showAnswer}
                   className={cn(
                     "p-6 rounded-2xl border-2 font-bold text-lg transition-all text-left",
                     !showAnswer && "hover:scale-105 hover:shadow-lg",
-                    showAnswer && opt.correct && "bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400",
-                    showAnswer && !opt.correct && userAnswers[userAnswers.length - 1]?.userAnswer === opt.text && "bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-400",
-                    !showAnswer && "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-purple-500 dark:hover:border-purple-400"
+                    showAnswer &&
+                      opt.correct &&
+                      "bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400",
+                    showAnswer &&
+                      !opt.correct &&
+                      userAnswers[userAnswers.length - 1]?.userAnswer ===
+                        opt.text &&
+                      "bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-400",
+                    !showAnswer &&
+                      "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-purple-500 dark:hover:border-purple-400"
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-900 dark:text-white">{opt.text}</span>
-                    {showAnswer && opt.correct && <Check className="text-green-600 dark:text-green-400" size={24} />}
-                    {showAnswer && !opt.correct && userAnswers[userAnswers.length - 1]?.userAnswer === opt.text && <XCircle className="text-red-600 dark:text-red-400" size={24} />}
+                    <span className="text-slate-900 dark:text-white">
+                      {opt.text}
+                    </span>
+                    {showAnswer && opt.correct && (
+                      <Check
+                        className="text-green-600 dark:text-green-400"
+                        size={24}
+                      />
+                    )}
+                    {showAnswer &&
+                      !opt.correct &&
+                      userAnswers[userAnswers.length - 1]?.userAnswer ===
+                        opt.text && (
+                        <XCircle
+                          className="text-red-600 dark:text-red-400"
+                          size={24}
+                        />
+                      )}
                   </div>
                 </button>
               ))}
@@ -524,8 +578,9 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
       const handleSubmit = (e) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
-        
-        const correct = inputValue.trim().toLowerCase() === q.correctAnswer.toLowerCase();
+
+        const correct =
+          inputValue.trim().toLowerCase() === q.correctAnswer.toLowerCase();
         handleAnswer(inputValue, correct);
       };
 
@@ -572,7 +627,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
                 className="w-full px-6 py-4 text-xl rounded-2xl border-2 border-green-300 dark:border-green-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-green-500 dark:focus:border-green-400 disabled:opacity-50"
                 autoFocus
               />
-              
+
               {!showAnswer ? (
                 <button
                   type="submit"
@@ -583,13 +638,17 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
                 </button>
               ) : (
                 <div className="space-y-4">
-                  <div className={cn(
-                    "p-4 rounded-xl border-2 text-lg font-bold",
-                    userAnswers[userAnswers.length - 1]?.correct 
-                      ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-900 dark:text-green-100"
-                      : "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-900 dark:text-red-100"
-                  )}>
-                    {userAnswers[userAnswers.length - 1]?.correct ? "Correct! ✓" : `Wrong. Correct answer: ${q.correctAnswer}`}
+                  <div
+                    className={cn(
+                      "p-4 rounded-xl border-2 text-lg font-bold",
+                      userAnswers[userAnswers.length - 1]?.correct
+                        ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-900 dark:text-green-100"
+                        : "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-900 dark:text-red-100"
+                    )}
+                  >
+                    {userAnswers[userAnswers.length - 1]?.correct
+                      ? "Correct! ✓"
+                      : `Wrong. Correct answer: ${q.correctAnswer}`}
                   </div>
                   <button
                     onClick={handleNextQuestion}
@@ -628,20 +687,44 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
               {q.options.map((opt, i) => (
                 <button
                   key={i}
-                  onClick={() => !showAnswer && handleAnswer(opt.text, opt.correct)}
+                  onClick={() =>
+                    !showAnswer && handleAnswer(opt.text, opt.correct)
+                  }
                   disabled={showAnswer}
                   className={cn(
                     "p-6 rounded-2xl border-2 font-bold text-2xl transition-all",
                     !showAnswer && "hover:scale-105 hover:shadow-lg",
-                    showAnswer && opt.correct && "bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400",
-                    showAnswer && !opt.correct && userAnswers[userAnswers.length - 1]?.userAnswer === opt.text && "bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-400",
-                    !showAnswer && "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-orange-500 dark:hover:border-orange-400"
+                    showAnswer &&
+                      opt.correct &&
+                      "bg-green-100 dark:bg-green-900/30 border-green-500 dark:border-green-400",
+                    showAnswer &&
+                      !opt.correct &&
+                      userAnswers[userAnswers.length - 1]?.userAnswer ===
+                        opt.text &&
+                      "bg-red-100 dark:bg-red-900/30 border-red-500 dark:border-red-400",
+                    !showAnswer &&
+                      "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-orange-500 dark:hover:border-orange-400"
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-900 dark:text-white">{opt.text}</span>
-                    {showAnswer && opt.correct && <Check className="text-green-600 dark:text-green-400" size={24} />}
-                    {showAnswer && !opt.correct && userAnswers[userAnswers.length - 1]?.userAnswer === opt.text && <XCircle className="text-red-600 dark:text-red-400" size={24} />}
+                    <span className="text-slate-900 dark:text-white">
+                      {opt.text}
+                    </span>
+                    {showAnswer && opt.correct && (
+                      <Check
+                        className="text-green-600 dark:text-green-400"
+                        size={24}
+                      />
+                    )}
+                    {showAnswer &&
+                      !opt.correct &&
+                      userAnswers[userAnswers.length - 1]?.userAnswer ===
+                        opt.text && (
+                        <XCircle
+                          className="text-red-600 dark:text-red-400"
+                          size={24}
+                        />
+                      )}
                   </div>
                 </button>
               ))}
@@ -666,8 +749,9 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
       const handleSubmit = (e) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
-        
-        const correct = inputValue.trim().toLowerCase() === q.correctAnswer.toLowerCase();
+
+        const correct =
+          inputValue.trim().toLowerCase() === q.correctAnswer.toLowerCase();
         handleAnswer(inputValue, correct);
       };
 
@@ -679,9 +763,9 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
                 Fill in the blank:
               </div>
               <div className="text-3xl font-black text-teal-900 dark:text-teal-100 mb-4">
-                {q.sentence.split('_____')[0]}
+                {q.sentence.split("_____")[0]}
                 <span className="inline-block w-48 h-2 bg-teal-300 dark:bg-teal-700 mx-2 align-middle"></span>
-                {q.sentence.split('_____')[1]}
+                {q.sentence.split("_____")[1]}
               </div>
               <div className="text-base text-teal-600 dark:text-teal-400">
                 Meaning: {vocab.meaning_id || vocab.meaning_en}
@@ -698,7 +782,7 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
                 className="w-full px-6 py-4 text-xl rounded-2xl border-2 border-teal-300 dark:border-teal-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 disabled:opacity-50"
                 autoFocus
               />
-              
+
               {!showAnswer ? (
                 <button
                   type="submit"
@@ -709,13 +793,17 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
                 </button>
               ) : (
                 <div className="space-y-4">
-                  <div className={cn(
-                    "p-4 rounded-xl border-2 text-lg font-bold",
-                    userAnswers[userAnswers.length - 1]?.correct 
-                      ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-900 dark:text-green-100"
-                      : "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-900 dark:text-red-100"
-                  )}>
-                    {userAnswers[userAnswers.length - 1]?.correct ? "Correct! ✓" : `Wrong. Correct answer: ${q.correctAnswer}`}
+                  <div
+                    className={cn(
+                      "p-4 rounded-xl border-2 text-lg font-bold",
+                      userAnswers[userAnswers.length - 1]?.correct
+                        ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-900 dark:text-green-100"
+                        : "bg-red-100 dark:bg-red-900/30 border-red-500 text-red-900 dark:text-red-100"
+                    )}
+                  >
+                    {userAnswers[userAnswers.length - 1]?.correct
+                      ? "Correct! ✓"
+                      : `Wrong. Correct answer: ${q.correctAnswer}`}
                   </div>
                   <button
                     onClick={handleNextQuestion}
@@ -740,279 +828,335 @@ export default function InteractiveVocabularyQuiz({ vocabularyData, level }) {
   const modalContent = (
     <>
       {/* Mode Selection Modal */}
-      {isOpen && !isPlaying && !selectedMode && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-in fade-in duration-200"
-          onClick={() => setIsOpen(false)}
-        >
+      {isOpen &&
+        !isPlaying &&
+        !selectedMode &&
+        createPortal(
           <div
-            className="w-full max-w-5xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-in fade-in duration-200"
+            onClick={() => setIsOpen(false)}
           >
-            <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 text-center text-white">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="absolute top-4 right-4 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors"
-              >
-                <X size={20} />
-              </button>
-              <Trophy className="w-16 h-16 mx-auto mb-4" />
-              <h2 className="text-4xl font-black mb-2">Choose Quiz Mode</h2>
-              <p className="text-lg opacity-90">Select your preferred learning style</p>
-            </div>
+            <div
+              className="w-full max-w-5xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 text-center text-white">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-4 right-4 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+                <Trophy className="w-16 h-16 mx-auto mb-4" />
+                <h2 className="text-4xl font-black mb-2">Choose Quiz Mode</h2>
+                <p className="text-lg opacity-90">
+                  Select your preferred learning style
+                </p>
+              </div>
 
-            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {QUIZ_MODES.map((mode) => {
-                  const Icon = mode.icon;
-                  return (
-                    <button
-                      key={mode.id}
-                      onClick={() => startQuiz(mode)}
-                      className="group p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-transparent hover:shadow-2xl transition-all text-left relative overflow-hidden"
-                    >
-                      <div className={cn(
-                        "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity",
-                        mode.color
-                      )} />
-                      <div className="relative">
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center mb-4",
-                          mode.color
-                        )}>
-                          <Icon className="text-white" size={24} />
+              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {QUIZ_MODES.map((mode) => {
+                    const Icon = mode.icon;
+                    return (
+                      <button
+                        key={mode.id}
+                        onClick={() => startQuiz(mode)}
+                        className="group p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-transparent hover:shadow-2xl transition-all text-left relative overflow-hidden"
+                      >
+                        <div
+                          className={cn(
+                            "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity",
+                            mode.color
+                          )}
+                        />
+                        <div className="relative">
+                          <div
+                            className={cn(
+                              "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center mb-4",
+                              mode.color
+                            )}
+                          >
+                            <Icon className="text-white" size={24} />
+                          </div>
+                          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+                            {mode.name}
+                          </h3>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {mode.description}
+                          </p>
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
-                          {mode.name}
-                        </h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          {mode.description}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Quiz Playing Modal */}
-      {isPlaying && selectedMode && !showReview && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-0 sm:p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              if (window.confirm('Are you sure you want to quit this quiz?')) {
-                handleClose();
-              }
-            }
-          }}
-        >
+      {isPlaying &&
+        selectedMode &&
+        !showReview &&
+        createPortal(
           <div
-            className="w-full h-[100dvh] sm:h-auto sm:max-h-[95vh] max-w-6xl flex flex-col bg-white dark:bg-slate-800 sm:rounded-3xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-0 sm:p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                if (
+                  window.confirm("Are you sure you want to quit this quiz?")
+                ) {
+                  handleClose();
+                }
+              }
+            }}
           >
-            {/* Header */}
-            <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-4 sm:p-6 text-white shrink-0">
-              <button
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to quit this quiz?')) {
-                    handleClose();
-                  }
-                }}
-                className="absolute top-4 right-4 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors"
-              >
-                <X size={20} />
-              </button>
+            <div
+              className="w-full h-[100dvh] sm:h-auto sm:max-h-[95vh] max-w-6xl flex flex-col bg-white dark:bg-slate-800 sm:rounded-3xl shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-4 sm:p-6 text-white shrink-0">
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm("Are you sure you want to quit this quiz?")
+                    ) {
+                      handleClose();
+                    }
+                  }}
+                  className="absolute top-4 right-4 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors"
+                >
+                  <X size={20} />
+                </button>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-black mb-1">{selectedMode.name}</h2>
-                  <p className="text-sm sm:text-base opacity-90">Level: {level}</p>
-                </div>
-                
-                {selectedMode.id !== "matching" && (
-                  <div className="text-right">
-                    {selectedMode.id === "speed" && timerActive && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <Timer size={20} />
-                        <span className="text-3xl font-black">{timeLeft}s</span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-black mb-1">
+                      {selectedMode.name}
+                    </h2>
+                    <p className="text-sm sm:text-base opacity-90">
+                      Level: {level}
+                    </p>
+                  </div>
+
+                  {selectedMode.id !== "matching" && (
+                    <div className="text-right">
+                      {selectedMode.id === "speed" && timerActive && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <Timer size={20} />
+                          <span className="text-3xl font-black">
+                            {timeLeft}s
+                          </span>
+                        </div>
+                      )}
+                      <div className="text-lg font-bold">
+                        {selectedMode.id === "matching"
+                          ? `${matchedPairs.length} / ${
+                              matchingItems.length / 2
+                            }`
+                          : `${currentIndex + 1} / ${questions.length}`}
                       </div>
-                    )}
-                    <div className="text-lg font-bold">
-                      {selectedMode.id === "matching" 
-                        ? `${matchedPairs.length} / ${matchingItems.length / 2}`
-                        : `${currentIndex + 1} / ${questions.length}`
-                      }
+                      <div className="text-sm opacity-75">Score: {score}</div>
                     </div>
-                    <div className="text-sm opacity-75">Score: {score}</div>
+                  )}
+                </div>
+
+                {/* Progress Bar */}
+                {selectedMode.id !== "matching" && (
+                  <div className="mt-4 h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-white rounded-full transition-all duration-300"
+                      style={{
+                        width: `${
+                          ((currentIndex + 1) / questions.length) * 100
+                        }%`,
+                      }}
+                    />
                   </div>
                 )}
               </div>
 
-              {/* Progress Bar */}
-              {selectedMode.id !== "matching" && (
-                <div className="mt-4 h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-white rounded-full transition-all duration-300"
-                    style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
-                  />
-                </div>
-              )}
-            </div>
+              {/* Content */}
+              {selectedMode.id === "matching" ? (
+                <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                  <div className="max-w-4xl mx-auto">
+                    <h3 className="text-2xl font-black text-center text-slate-900 dark:text-white mb-8">
+                      Match words with their meanings
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {matchingItems.map((item) => {
+                        const isSelected = selectedPairs.some(
+                          (p) => p.id === item.id
+                        );
+                        const isMatched = matchedPairs.includes(item.pairId);
+                        const isWrong =
+                          selectedPairs.length === 2 &&
+                          selectedPairs.some((p) => p.id === item.id) &&
+                          selectedPairs[0].pairId !== selectedPairs[1].pairId;
 
-            {/* Content */}
-            {selectedMode.id === "matching" ? (
-              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-                <div className="max-w-4xl mx-auto">
-                  <h3 className="text-2xl font-black text-center text-slate-900 dark:text-white mb-8">
-                    Match words with their meanings
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {matchingItems.map((item) => {
-                      const isSelected = selectedPairs.some(p => p.id === item.id);
-                      const isMatched = matchedPairs.includes(item.pairId);
-                      const isWrong = selectedPairs.length === 2 && selectedPairs.some(p => p.id === item.id) && selectedPairs[0].pairId !== selectedPairs[1].pairId;
-
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleMatchingClick(item)}
-                          disabled={isMatched}
-                          className={cn(
-                            "p-6 rounded-2xl border-2 font-bold text-lg transition-all",
-                            isMatched && "bg-green-100 dark:bg-green-900/30 border-green-500 opacity-50 cursor-not-allowed",
-                            isSelected && !isWrong && "bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500 scale-105",
-                            isWrong && "bg-red-100 dark:bg-red-900/30 border-red-500 animate-shake",
-                            !isMatched && !isSelected && "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-indigo-500 hover:scale-105"
-                          )}
-                        >
-                          <div className="text-slate-900 dark:text-white">
-                            {item.type === "word" ? (
-                              <>
-                                <div className="text-3xl mb-2">{item.text}</div>
-                                <div className="text-base text-indigo-600 dark:text-indigo-400">
-                                  {item.vocab.reading}
-                                </div>
-                              </>
-                            ) : (
-                              <div className="text-xl">{item.text}</div>
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => handleMatchingClick(item)}
+                            disabled={isMatched}
+                            className={cn(
+                              "p-6 rounded-2xl border-2 font-bold text-lg transition-all",
+                              isMatched &&
+                                "bg-green-100 dark:bg-green-900/30 border-green-500 opacity-50 cursor-not-allowed",
+                              isSelected &&
+                                !isWrong &&
+                                "bg-indigo-100 dark:bg-indigo-900/30 border-indigo-500 scale-105",
+                              isWrong &&
+                                "bg-red-100 dark:bg-red-900/30 border-red-500 animate-shake",
+                              !isMatched &&
+                                !isSelected &&
+                                "bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 hover:border-indigo-500 hover:scale-105"
                             )}
-                          </div>
-                          {isMatched && <Check className="text-green-600 dark:text-green-400 mx-auto mt-2" size={24} />}
-                        </button>
-                      );
-                    })}
+                          >
+                            <div className="text-slate-900 dark:text-white">
+                              {item.type === "word" ? (
+                                <>
+                                  <div className="text-3xl mb-2">
+                                    {item.text}
+                                  </div>
+                                  <div className="text-base text-indigo-600 dark:text-indigo-400">
+                                    {item.vocab.reading}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-xl">{item.text}</div>
+                              )}
+                            </div>
+                            {isMatched && (
+                              <Check
+                                className="text-green-600 dark:text-green-400 mx-auto mt-2"
+                                size={24}
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              renderQuestion()
-            )}
-          </div>
-        </div>,
-        document.body
-      )}
+              ) : (
+                renderQuestion()
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Review Modal */}
-      {showReview && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-in fade-in duration-200"
-          onClick={(e) => e.target === e.currentTarget && handleClose()}
-        >
+      {showReview &&
+        createPortal(
           <div
-            className="w-full max-w-4xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-md p-4 animate-in fade-in duration-200"
+            onClick={(e) => e.target === e.currentTarget && handleClose()}
           >
-            <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 text-center text-white">
-              <Trophy className="w-20 h-20 mx-auto mb-4" />
-              <h2 className="text-4xl font-black mb-2">Quiz Complete!</h2>
-              <p className="text-xl opacity-90">
-                You scored {score} / {selectedMode?.id === "matching" ? matchingItems.length / 2 : questions.length}
-              </p>
-              <div className="text-3xl font-black mt-2">
-                {Math.round((score / (selectedMode?.id === "matching" ? matchingItems.length / 2 : questions.length)) * 100)}%
-              </div>
-            </div>
-
-            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <button
-                  onClick={handleRestart}
-                  className="px-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold flex items-center justify-center gap-2 transition-colors"
-                >
-                  <RotateCcw size={20} />
-                  Try Again
-                </button>
-                <button
-                  onClick={handleClose}
-                  className="px-6 py-4 rounded-2xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-bold flex items-center justify-center gap-2 transition-colors"
-                >
-                  <X size={20} />
-                  Close
-                </button>
+            <div
+              className="w-full max-w-4xl max-h-[90vh] flex flex-col bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 text-center text-white">
+                <Trophy className="w-20 h-20 mx-auto mb-4" />
+                <h2 className="text-4xl font-black mb-2">Quiz Complete!</h2>
+                <p className="text-xl opacity-90">
+                  You scored {score} /{" "}
+                  {selectedMode?.id === "matching"
+                    ? matchingItems.length / 2
+                    : questions.length}
+                </p>
+                <div className="text-3xl font-black mt-2">
+                  {Math.round(
+                    (score /
+                      (selectedMode?.id === "matching"
+                        ? matchingItems.length / 2
+                        : questions.length)) *
+                      100
+                  )}
+                  %
+                </div>
               </div>
 
-              {selectedMode?.id !== "matching" && userAnswers.length > 0 && (
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
-                    Review Your Answers
-                  </h3>
-                  <div className="space-y-3">
-                    {userAnswers.map((answer, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "p-4 rounded-xl border-2",
-                          answer.correct
-                            ? "bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-400"
-                            : "bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-400"
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-2xl font-black text-slate-900 dark:text-white">
-                                {answer.question.vocab.word}
-                              </span>
-                              <span className="text-base font-medium text-slate-600 dark:text-slate-400">
-                                {answer.question.vocab.reading}
-                              </span>
+              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <button
+                    onClick={handleRestart}
+                    className="px-6 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <RotateCcw size={20} />
+                    Try Again
+                  </button>
+                  <button
+                    onClick={handleClose}
+                    className="px-6 py-4 rounded-2xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white font-bold flex items-center justify-center gap-2 transition-colors"
+                  >
+                    <X size={20} />
+                    Close
+                  </button>
+                </div>
+
+                {selectedMode?.id !== "matching" && userAnswers.length > 0 && (
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4">
+                      Review Your Answers
+                    </h3>
+                    <div className="space-y-3">
+                      {userAnswers.map((answer, i) => (
+                        <div
+                          key={i}
+                          className={cn(
+                            "p-4 rounded-xl border-2",
+                            answer.correct
+                              ? "bg-green-50 dark:bg-green-900/20 border-green-500 dark:border-green-400"
+                              : "bg-red-50 dark:bg-red-900/20 border-red-500 dark:border-red-400"
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-2xl font-black text-slate-900 dark:text-white">
+                                  {answer.question.vocab.word}
+                                </span>
+                                <span className="text-base font-medium text-slate-600 dark:text-slate-400">
+                                  {answer.question.vocab.reading}
+                                </span>
+                              </div>
+                              <div className="text-sm text-slate-700 dark:text-slate-300 font-medium mb-1">
+                                Correct: {answer.question.correctAnswer}
+                              </div>
+                              {!answer.correct && (
+                                <div className="text-sm text-red-700 dark:text-red-300 font-medium">
+                                  Your answer: {answer.userAnswer}
+                                </div>
+                              )}
                             </div>
-                            <div className="text-sm text-slate-700 dark:text-slate-300 font-medium mb-1">
-                              Correct: {answer.question.correctAnswer}
+                            <div className="flex-shrink-0">
+                              {answer.correct ? (
+                                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                                  <Check className="text-white" size={24} />
+                                </div>
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
+                                  <XCircle className="text-white" size={24} />
+                                </div>
+                              )}
                             </div>
-                            {!answer.correct && (
-                              <div className="text-sm text-red-700 dark:text-red-300 font-medium">
-                                Your answer: {answer.userAnswer}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-shrink-0">
-                            {answer.correct ? (
-                              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-                                <Check className="text-white" size={24} />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
-                                <XCircle className="text-white" size={24} />
-                              </div>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 
