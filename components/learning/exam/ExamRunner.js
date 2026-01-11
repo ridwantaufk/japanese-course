@@ -58,13 +58,13 @@ export default function ExamRunner({ exam, sections }) {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [isFinished]);
+  }, [isFinished, finishExam]);
 
-  const finishExam = () => {
+  const finishExam = useCallback(() => {
     setIsFinished(true);
     clearExamInProgress(exam.id);
     // Submit logic here
-  };
+  }, [exam.id]);
 
   // Auto-save progress every 30 seconds
   useEffect(() => {

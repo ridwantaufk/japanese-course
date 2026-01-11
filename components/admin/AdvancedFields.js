@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Upload, Plus, X, Search } from "lucide-react";
 
 /**
@@ -8,15 +8,9 @@ import { Calendar, Upload, Plus, X, Search } from "lucide-react";
  */
 export function DatePicker({ value, onChange, required = false }) {
   const [showCalendar, setShowCalendar] = useState(false);
-  const [localValue, setLocalValue] = useState(value || "");
-
-  useEffect(() => {
-    setLocalValue(value || "");
-  }, [value]);
 
   const handleDateChange = (e) => {
     const newValue = e.target.value;
-    setLocalValue(newValue);
     onChange(newValue);
   };
 
@@ -26,7 +20,7 @@ export function DatePicker({ value, onChange, required = false }) {
         <input
           type="date"
           required={required}
-          value={localValue}
+          value={value || ''}
           onChange={handleDateChange}
           className="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 px-4 py-2.5 pr-10 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white dark:focus:bg-black/40 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all"
         />
@@ -87,6 +81,7 @@ export function FilePicker({
       {preview && (
         <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
           {preview.startsWith("data:image") ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={preview}
               alt="Preview"
@@ -125,11 +120,7 @@ export function RelationshipPicker({
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    loadOptions();
-  }, [resourceKey, searchQuery]);
-
-  const loadOptions = async () => {
+  const loadOptions = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -145,7 +136,11 @@ export function RelationshipPicker({
     } finally {
       setLoading(false);
     }
-  };
+  }, [resourceKey, searchQuery]);
+
+  useEffect(() => {
+    loadOptions();
+  }, [loadOptions]);
 
   const selectedOption = options.find((opt) => opt.id === value);
 
@@ -224,7 +219,10 @@ export function ArrayEditor({
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    onChange(items);
+    if (JSON.stringify(items) !== JSON.stringify(value)) {
+      onChange(items);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   const handleAdd = () => {
@@ -313,7 +311,10 @@ export function TagInput({
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    onChange(tags);
+    if (JSON.stringify(tags) !== JSON.stringify(value)) {
+      onChange(tags);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tags]);
 
   const filteredSuggestions = suggestions.filter(

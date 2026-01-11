@@ -122,6 +122,7 @@ export default function VocabDeck({ initialData }) {
     if (isFlipped && currentCard) {
       playAudio();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFlipped, currentCard]);
 
   // --- RENDERERS ---
@@ -192,7 +193,7 @@ export default function VocabDeck({ initialData }) {
             Session Complete!
           </h2>
           <p className="text-slate-500 dark:text-slate-400">
-            You've reviewed all cards in this set.
+            You&apos;ve reviewed all cards in this set.
           </p>
         </div>
 

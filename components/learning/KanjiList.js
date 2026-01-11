@@ -24,22 +24,34 @@ export default function KanjiList({ initialData }) {
 
   // Fetch Examples when Kanji is selected
   useEffect(() => {
-    if (selectedKanji) {
+    let mounted = true;
+    
+    const loadExamples = async () => {
+      if (!selectedKanji) {
+        if (mounted) setExamples([]);
+        return;
+      }
+      
       setLoadingExamples(true);
-      fetch(`/api/admin/kanji_examples?kanji_id=${selectedKanji.id}`)
-        .then((res) => res.json())
-        .then((res) => {
-          // API returns { data: [...], meta: ... }
-          setExamples(res.data || []);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch examples", err);
+      try {
+        const res = await fetch(`/api/admin/kanji_examples?kanji_id=${selectedKanji.id}`);
+        const data = await res.json();
+        if (mounted) {
+          setExamples(data.data || []);
+          setLoadingExamples(false);
+        }
+      } catch (err) {
+        console.error("Failed to fetch examples", err);
+        if (mounted) {
           setExamples([]);
-        })
-        .finally(() => setLoadingExamples(false));
-    } else {
-      setExamples([]);
-    }
+          setLoadingExamples(false);
+        }
+      }
+    };
+    
+    loadExamples();
+    
+    return () => { mounted = false; };
   }, [selectedKanji]);
 
   // Audio Logic with Fallback

@@ -58,7 +58,7 @@ export default async function ExamPage({ params }) {
             <div>
                 <h1 className="text-3xl font-black text-slate-300 mb-2">Construction In Progress</h1>
                 <p className="text-slate-500 max-w-md mx-auto">
-                    The exam <strong>{data.exam.title_id}</strong> structure exists, but the questions haven't been uploaded to the database yet.
+                    The exam <strong>{data.exam.title_id}</strong> structure exists, but the questions haven&apos;t been uploaded to the database yet.
                 </p>
             </div>
         </div>
