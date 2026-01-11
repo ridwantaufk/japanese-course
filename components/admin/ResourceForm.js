@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, ArrowLeft, Loader2 } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from './ToastProvider';
+import { validateFormData } from '@/lib/validators';
 
 export default function ResourceForm({ resourceKey, config, initialData = null }) {
   const router = useRouter();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState(() => {
     if (!initialData) return {};
     return { ...initialData };
@@ -15,10 +19,23 @@ export default function ResourceForm({ resourceKey, config, initialData = null }
 
   const handleChange = (key, value) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+    // Clear error when user starts typing
+    if (errors[key]) {
+      setErrors(prev => ({ ...prev, [key]: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = validateFormData(formData, config.fields);
+    if (!validation.valid) {
+      setErrors(validation.errors);
+      toast.error(`Please fix ${Object.keys(validation.errors).length} validation error(s)`);
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -31,7 +48,7 @@ export default function ResourceForm({ resourceKey, config, initialData = null }
           try {
             submissionData[field.key] = JSON.parse(submissionData[field.key]);
           } catch (e) {
-            console.warn(`Failed to parse JSON for ${field.key}`);
+            toast.warning(`Invalid JSON in ${field.label}, using raw string`);
           }
         }
       });
@@ -54,11 +71,12 @@ export default function ResourceForm({ resourceKey, config, initialData = null }
         throw new Error(json.error || 'Something went wrong');
       }
 
+      toast.success(isNew ? 'Record created successfully' : 'Record updated successfully');
       router.push(`/admin/${resourceKey}`);
       router.refresh();
       
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -93,6 +111,12 @@ export default function ResourceForm({ resourceKey, config, initialData = null }
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </label>
                   {renderInput(field, formData[field.key], (val) => handleChange(field.key, val))}
+                  {errors[field.key] && (
+                    <div className="flex items-center gap-2 mt-2 text-xs text-red-600 dark:text-red-400">
+                      <AlertCircle size={14} />
+                      <span>{errors[field.key]}</span>
+                    </div>
+                  )}
                 </div>
                );
             })}

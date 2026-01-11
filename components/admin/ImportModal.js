@@ -3,10 +3,14 @@
 import { useState } from 'react';
 import { Upload, X, FileSpreadsheet, Check, AlertCircle, Loader2, Download, AlertTriangle } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useToast } from './ToastProvider';
+import { validateImportRow } from '@/lib/validators';
 
 export default function ImportModal({ resourceKey, config, onClose, onSuccess }) {
+  const toast = useToast();
   const [step, setStep] = useState(1); // 1: Upload, 2: Preview, 3: Result
   const [fileData, setFileData] = useState([]);
+  const [validationErrors, setValidationErrors] = useState([]);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -16,10 +20,14 @@ export default function ImportModal({ resourceKey, config, onClose, onSuccess })
     const headers = {};
     config.fields.forEach(f => headers[f.key] = f.label + (f.required ? ' *' : ''));
     
-    // Example row
+    // Example row with better type hints
     const example = {};
     config.fields.forEach(f => {
-        example[f.key] = f.type === 'boolean' ? 'true' : f.type === 'number' ? 123 : 'example';
+        if (f.type === 'boolean') example[f.key] = 'true or false';
+        else if (f.type === 'number') example[f.key] = 123;
+        else if (f.type === 'date') example[f.key] = '2024-01-01';
+        else if (f.type === 'json') example[f.key] = '{"key": "value"}';
+        else example[f.key] = 'example text';
     });
 
     const ws = XLSX.utils.json_to_sheet([example]);
@@ -28,6 +36,7 @@ export default function ImportModal({ resourceKey, config, onClose, onSuccess })
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, `${resourceKey}_template.xlsx`);
+    toast.success('Template downloaded successfully');
   };
 
   const handleFileUpload = (e) => {
@@ -41,13 +50,42 @@ export default function ImportModal({ resourceKey, config, onClose, onSuccess })
       const wsname = wb.SheetNames[0];
       const ws = wb.Sheets[wsname];
       const data = XLSX.utils.sheet_to_json(ws);
+      
+      if (data.length === 0) {
+        toast.error('File is empty');
+        return;
+      }
+      
+      if (data.length > 1000) {
+        toast.warning(`Large file detected (${data.length} rows). Consider importing in smaller batches.`);
+      }
+      
+      // Validate all rows
+      const errors = [];
+      data.forEach((row, index) => {
+        const validation = validateImportRow(row, config.fields);
+        if (!validation.valid) {
+          errors.push({ row: index + 1, errors: validation.errors });
+        }
+      });
+      
       setFileData(data);
+      setValidationErrors(errors);
       setStep(2);
+      
+      if (errors.length > 0) {
+        toast.warning(`${errors.length} rows have validation errors`);
+      }
     };
     reader.readAsBinaryString(file);
   };
 
   const handleImport = async () => {
+    if (validationErrors.length > 0) {
+      toast.error('Please fix validation errors before importing');
+      return;
+    }
+    
     setImporting(true);
     try {
       const res = await fetch(`/api/admin/${resourceKey}/import`, {
@@ -56,11 +94,23 @@ export default function ImportModal({ resourceKey, config, onClose, onSuccess })
         body: JSON.stringify({ data: fileData }),
       });
       const json = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(json.error || 'Import failed');
+      }
+      
       setResult(json);
       setStep(3);
+      
+      if (json.success > 0) {
+        toast.success(`Successfully imported ${json.success} records`);
+      }
+      if (json.failed > 0) {
+        toast.warning(`${json.failed} records failed to import`);
+      }
       if (json.success > 0) onSuccess(); // Trigger refresh on parent
     } catch (err) {
-      alert('Import failed: ' + err.message);
+      toast.error('Import failed: ' + err.message);
     } finally {
       setImporting(false);
     }
@@ -118,8 +168,29 @@ export default function ImportModal({ resourceKey, config, onClose, onSuccess })
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-slate-500">Preview (First 5 rows):</span>
-                <span className="text-xs rounded-full bg-indigo-100 px-2 py-1 font-bold text-indigo-700">{fileData.length} rows found</span>
+                <span className="text-xs rounded-full bg-indigo-100 px-2 py-1 font-bold text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">{fileData.length} rows found</span>
               </div>
+              
+              {validationErrors.length > 0 && (
+                <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                  <div className="flex items-center gap-2 mb-2 text-red-700 dark:text-red-400 font-semibold">
+                    <AlertTriangle size={18} />
+                    <span>{validationErrors.length} row(s) have validation errors</span>
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-2 text-xs">
+                    {validationErrors.slice(0, 10).map((err, i) => (
+                      <div key={i} className="text-red-600 dark:text-red-300">
+                        <strong>Row {err.row}:</strong> {Object.values(err.errors).join(', ')}
+                      </div>
+                    ))}
+                    {validationErrors.length > 10 && (
+                      <div className="text-red-500 dark:text-red-400 italic">
+                        ...and {validationErrors.length - 10} more errors
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div className="overflow-x-auto rounded-lg border dark:border-white/10">
                 <table className="w-full text-xs text-left">
