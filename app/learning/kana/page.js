@@ -2,14 +2,35 @@ import { query } from '@/lib/db';
 import KanaChart from '@/components/learning/KanaChart';
 import KanaQuizModal from '@/components/learning/KanaQuizModal';
 
-async function getKana() {
+async function getData() {
   const hiragana = (await query('SELECT * FROM hiragana ORDER BY id ASC')).rows;
   const katakana = (await query('SELECT * FROM katakana ORDER BY id ASC')).rows;
-  return { hiragana, katakana };
+  
+  // Fetch vocabulary
+  const vocabulary = (await query(`
+    SELECT id, word, hiragana, katakana, romaji, meaning_id, meaning_en 
+    FROM vocabulary 
+    WHERE (hiragana IS NOT NULL OR katakana IS NOT NULL) 
+    AND romaji IS NOT NULL
+    AND romaji ~ '^[\\x00-\\x7F]+$'
+    AND length(romaji) > 1
+    AND romaji ~ '[a-zA-Z0-9]{2,}'
+    ORDER BY random() 
+    LIMIT 300
+  `)).rows;
+
+  // Fetch sentences
+  const sentences = (await query(`
+    SELECT id, sentence, romaji, difficulty, type, meaning_id, meaning_en 
+    FROM kana_sentences 
+    ORDER BY random()
+  `)).rows;
+
+  return { hiragana, katakana, vocabulary, sentences };
 }
 
 export default async function KanaPage() {
-  const { hiragana, katakana } = await getKana();
+  const { hiragana, katakana, vocabulary, sentences } = await getData();
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -23,7 +44,12 @@ export default async function KanaPage() {
       </div>
 
       <div className="flex justify-center">
-        <KanaQuizModal hiragana={hiragana} katakana={katakana} />
+        <KanaQuizModal 
+          hiragana={hiragana} 
+          katakana={katakana} 
+          vocabulary={vocabulary} 
+          sentences={sentences} 
+        />
       </div>
 
       <KanaChart hiragana={hiragana} katakana={katakana} />
