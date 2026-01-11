@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import LevelSelector from './LevelSelector';
 import { X, Volume2, Book, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';

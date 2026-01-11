@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { query } from '@/lib/db';
 import LevelSelector from '@/components/learning/LevelSelector';
 import { MessageCircle, Clock, BarChart } from 'lucide-react';
+import { formatTitle } from '@/lib/learningUtils';
 
 async function getConversations() {
   try {
@@ -41,7 +42,7 @@ export default async function ConversationsPage() {
             </div>
 
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 line-clamp-2">
-              {(conv.title_id || conv.title_en || 'Untitled').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              {formatTitle(conv.title_id || conv.title_en || 'Untitled')}
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-6">
               {conv.description_id || 'No description available.'}

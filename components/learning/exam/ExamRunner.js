@@ -2,16 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Timer, CheckCircle, ChevronRight, ChevronLeft, Flag } from 'lucide-react';
+import { Timer, CheckCircle, ChevronRight, ChevronLeft, Flag, Volume2 } from 'lucide-react';
+import FuriganaText from '@/components/learning/FuriganaText';
 
 export default function ExamRunner({ exam, sections }) {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { questionId: answer }
   const [timeLeft, setTimeLeft] = useState(exam.total_time * 60); // seconds
   const [isFinished, setIsFinished] = useState(false);
+  const [playingAudio, setPlayingAudio] = useState(null);
 
   const currentSection = sections[currentSectionIndex];
   const questions = currentSection.questions || [];
+
+  const playAudio = (audioUrl, id, text) => {
+    if (!audioUrl) {
+      if (text && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ja-JP';
+        window.speechSynthesis.speak(utterance);
+      }
+      return;
+    }
+    
+    setPlayingAudio(id);
+    const audio = new Audio(audioUrl);
+    audio.play().catch(e => console.warn('Audio error:', e));
+    audio.onended = () => setPlayingAudio(null);
+  };
 
   // Timer Logic
   useEffect(() => {
@@ -115,8 +133,40 @@ export default function ExamRunner({ exam, sections }) {
                         <div className="flex gap-4 mb-6">
                             <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 text-sm font-bold text-slate-600 dark:text-white">{q.question_number}</span>
                             <div className="flex-1">
-                                {/* Context / Text */}
-                                {q.context_ja && <p className="mb-4 text-lg leading-relaxed text-slate-700 dark:text-slate-300 font-serif">{q.context_ja}</p>}
+                                {/* Context / Text with Audio */}
+                                {q.context_ja && (
+                                  <div className="mb-4 p-4 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-100 dark:border-white/10">
+                                    <div className="flex justify-between items-start gap-3">
+                                      <div className="flex-1">
+                                        <FuriganaText
+                                          text={q.context_ja}
+                                          furigana={q.context_furigana}
+                                          romaji={q.context_romaji}
+                                          wordBreakdown={q.word_breakdown}
+                                          showRomaji={false}
+                                          className="text-lg leading-relaxed text-slate-700 dark:text-slate-300 font-serif"
+                                        />
+                                        {q.context_romaji && (
+                                          <p className="text-xs font-mono text-slate-400 dark:text-slate-500 mt-2">
+                                            {q.context_romaji}
+                                          </p>
+                                        )}
+                                      </div>
+                                      {q.audio_url && (
+                                        <button
+                                          onClick={() => playAudio(q.audio_url, q.id, q.context_ja)}
+                                          className={`flex-shrink-0 p-2 rounded-full transition-all ${
+                                            playingAudio === q.id 
+                                              ? 'bg-pink-500 text-white animate-pulse' 
+                                              : 'bg-slate-100 text-slate-600 hover:bg-pink-100 hover:text-pink-600 dark:bg-white/10 dark:text-slate-300'
+                                          }`}
+                                        >
+                                          <Volume2 size={18} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
                                 
                                 {/* Question Prompt */}
                                 <p className="text-lg font-bold text-slate-900 dark:text-white">

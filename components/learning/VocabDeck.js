@@ -67,11 +67,10 @@ export default function VocabDeck({ initialData }) {
     if (currentCard?.audio_url) new Audio(currentCard.audio_url).play().catch(() => {});
   };
 
-  // Auto-play audio on flip (optional UX improvement)
+  // Auto-play audio on flip
   useEffect(() => {
     if (isFlipped && currentCard) {
-      // Uncomment below to enable auto-play on flip
-      // playAudio();
+      playAudio();
     }
   }, [isFlipped, currentCard]);
 
@@ -187,9 +186,16 @@ export default function VocabDeck({ initialData }) {
                 Word
               </span>
               
-              <div className="text-7xl font-black text-slate-800 dark:text-white mb-6 text-center">
+              <div className="text-7xl font-black text-slate-800 dark:text-white mb-4 text-center">
                 {currentCard.word}
               </div>
+              
+              {/* Romaji hint */}
+              {currentCard.romaji && (
+                <div className="text-xl font-mono text-slate-400 dark:text-slate-500 mb-6">
+                  {currentCard.romaji}
+                </div>
+              )}
               
               <button 
                 onClick={() => setIsFlipped(true)}
@@ -204,8 +210,15 @@ export default function VocabDeck({ initialData }) {
               
               <div className="flex-1 flex flex-col items-center justify-center w-full">
                 <div className="text-center space-y-4">
-                    <FuriganaText text={currentCard.word} furigana={currentCard.furigana} className="text-5xl font-bold block drop-shadow-md" />
-                    <div className="flex items-center justify-center gap-2 opacity-80 font-mono bg-black/20 px-4 py-1 rounded-full text-sm">
+                    <FuriganaText 
+                      text={currentCard.word} 
+                      furigana={currentCard.furigana}
+                      romaji={currentCard.romaji}
+                      wordBreakdown={currentCard.word_breakdown}
+                      showRomaji={false}
+                      className="text-5xl font-bold block drop-shadow-md" 
+                    />
+                    <div className="flex items-center justify-center gap-2 opacity-90 font-mono bg-black/20 px-4 py-2 rounded-full text-sm">
                         {currentCard.romaji}
                         <button onClick={playAudio} className="hover:text-pink-300 transition-colors"><Volume2 size={16} /></button>
                     </div>
@@ -216,6 +229,20 @@ export default function VocabDeck({ initialData }) {
                         {currentCard.meaning_id}
                     </p>
                     <p className="text-sm opacity-70 italic">{currentCard.word_category}</p>
+                    
+                    {/* Word Breakdown if available */}
+                    {currentCard.word_breakdown && currentCard.word_breakdown.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-white/20">
+                        <p className="text-xs uppercase tracking-wider opacity-60 mb-2">Word Parts</p>
+                        <div className="flex flex-wrap justify-center gap-2">
+                          {currentCard.word_breakdown.map((wb, idx) => (
+                            <span key={idx} className="text-xs bg-white/10 px-3 py-1 rounded-full">
+                              {wb.word} = {wb.meaning}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
 
