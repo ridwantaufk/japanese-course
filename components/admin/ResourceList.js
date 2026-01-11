@@ -645,7 +645,7 @@ export default function ResourceList({ resourceKey, config, data, meta }) {
           }}
         />
       )}
-      
+
       {showBatchEdit && (
         <BatchEditModal
           resourceKey={resourceKey}
