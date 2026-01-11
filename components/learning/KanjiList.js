@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import FuriganaText from "./FuriganaText";
 import InteractiveKanjiQuiz from "./InteractiveKanjiQuiz";
 
-import { playAudioWithFallback, speak } from '@/lib/tts';
+import { playAudioWithFallback, speak } from "@/lib/tts";
 
 export default function KanjiList({ initialData }) {
   const router = useRouter();
@@ -165,20 +165,20 @@ export default function KanjiList({ initialData }) {
   // Scroll lock when modal is open
   useEffect(() => {
     if (selectedKanji) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [selectedKanji]);
 
   const playAudio = async (text, url) => {
     try {
-      await playAudioWithFallback(url, text, { lang: 'ja-JP', rate: 0.85 });
+      await playAudioWithFallback(url, text, { lang: "ja-JP", rate: 0.85 });
     } catch (e) {
-      console.error('Audio playback failed:', e);
+      console.error("Audio playback failed:", e);
     }
   };
 

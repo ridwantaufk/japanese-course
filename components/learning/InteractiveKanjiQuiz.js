@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   X,
@@ -98,6 +98,7 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
     showHints: true,
     playSound: true,
   });
+  const [randomModeSelected, setRandomModeSelected] = useState(false);
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -133,32 +134,62 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
     // Load progress from localStorage
     const saved = localStorage.getItem(`kanji_progress_${level}`);
-    if (saved) setUserProgress(JSON.parse(saved));
+    if (saved) {
+      const loadTimer = setTimeout(() => setUserProgress(JSON.parse(saved)), 0);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(loadTimer);
+      };
+    }
+    return () => clearTimeout(timer);
   }, [level]);
+
+  // Handle mixed mode random selection
+  useEffect(() => {
+    let timer1, timer2;
+    if (config.mode === "mixed" && !randomModeSelected && phase === "game") {
+      const modes = ["flash", "memory", "drag"];
+      const randomMode = modes[Math.floor(Math.random() * modes.length)];
+      timer1 = setTimeout(() => {
+        setConfig((prev) => ({ ...prev, mode: randomMode }));
+        setRandomModeSelected(true);
+      }, 0);
+    }
+    if (phase !== "game") {
+      timer2 = setTimeout(() => setRandomModeSelected(false), 0);
+    }
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [config.mode, randomModeSelected, phase]);
 
   // Scroll lock when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   useEffect(() => {
     if (phase === "game" && config.difficulty !== "easy") {
-      setTimerActive(true);
-      setTimeLeft(DIFFICULTY_LEVELS[config.difficulty.toUpperCase()].time);
+      const timer = setTimeout(() => {
+        setTimerActive(true);
+        setTimeLeft(DIFFICULTY_LEVELS[config.difficulty.toUpperCase()].time);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [currentIndex, phase, config.difficulty]);
 
-  const playSound = (type) => {
+  const playSound = useCallback((type) => {
     if (!config.playSound) return;
     const sounds = {
       correct: "/sounds/correct.mp3",
@@ -170,7 +201,7 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
       audioRef.current.src = sounds[type] || "";
       audioRef.current.play().catch(() => {});
     }
-  };
+  }, [config.playSound]);
 
   const triggerConfetti = () => {
     confetti({
@@ -180,7 +211,7 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
     });
   };
 
-  const handleTimeout = () => {
+  const handleTimeout = useCallback(() => {
     setTimerActive(false);
     setFeedback("timeout");
     setStreak(0);
@@ -196,16 +227,17 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
         setPhase("result");
       }
     }, 2000);
-  };
+  }, [currentIndex, questions.length, playSound]);
 
   useEffect(() => {
     if (timerActive && timeLeft > 0) {
       timerRef.current = setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     } else if (timerActive && timeLeft === 0) {
-      handleTimeout();
+      const timer = setTimeout(() => handleTimeout(), 0);
+      return () => clearTimeout(timer);
     }
     return () => clearTimeout(timerRef.current);
-  }, [timerActive, timeLeft]);
+  }, [timerActive, timeLeft, handleTimeout]);
 
   const generateFlashQuestions = () => {
     const pool = [...kanjiData]
@@ -286,8 +318,8 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
         content: k.character,
         type: "kanji",
         matchId: k.id,
-        reading: firstReading?.reading || firstReading?.kana || '',
-        romaji: firstReading?.romaji || '',
+        reading: firstReading?.reading || firstReading?.kana || "",
+        romaji: firstReading?.romaji || "",
       });
       cards.push({
         id: `${k.id}-meaning`,
@@ -308,11 +340,8 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
     } else if (config.mode === "drag") {
       generateDragQuestions();
     } else if (config.mode === "mixed") {
-      // Mixed mode: randomly select between flash, memory, and drag
-      const modes = ["flash", "memory", "drag"];
-      const randomMode = modes[Math.floor(Math.random() * modes.length)];
-      setConfig(prev => ({ ...prev, mode: randomMode }));
-      return; // Will re-trigger with new mode
+      // Random mode will be selected by useEffect
+      return;
     } else {
       // For flash, speed, writing, story modes
       setQuestions(generateFlashQuestions());
@@ -335,11 +364,11 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
     const isCorrect = answer === q.correctAnswer;
 
     // Save user answer
-    setQuestions(prev => prev.map((question, idx) => 
-      idx === currentIndex 
-        ? { ...question, userAnswer: answer }
-        : question
-    ));
+    setQuestions((prev) =>
+      prev.map((question, idx) =>
+        idx === currentIndex ? { ...question, userAnswer: answer } : question
+      )
+    );
 
     setTimerActive(false);
     setSelectedAnswer(answer);
@@ -478,8 +507,8 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
         id: k.id,
         kanji: k.character,
         correct: k.meaning_id || k.meaning_en,
-        reading: firstReading?.reading || firstReading?.kana || '',
-        romaji: firstReading?.romaji || '',
+        reading: firstReading?.reading || firstReading?.kana || "",
+        romaji: firstReading?.romaji || "",
       };
     });
 
@@ -900,10 +929,18 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
                         {showFurigana && currentQ.kanji && (
                           <div className="mt-4 space-y-2 text-center">
                             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                              {[...(currentQ.kanji.onyomi || []), ...(currentQ.kanji.kunyomi || [])][0]?.reading || ''}
+                              {[
+                                ...(currentQ.kanji.onyomi || []),
+                                ...(currentQ.kanji.kunyomi || []),
+                              ][0]?.reading || ""}
                             </div>
                             <div className="text-sm font-mono text-slate-500 dark:text-slate-400">
-                              ({[...(currentQ.kanji.onyomi || []), ...(currentQ.kanji.kunyomi || [])][0]?.romaji || ''})
+                              (
+                              {[
+                                ...(currentQ.kanji.onyomi || []),
+                                ...(currentQ.kanji.kunyomi || []),
+                              ][0]?.romaji || ""}
+                              )
                             </div>
                           </div>
                         )}
@@ -1278,16 +1315,18 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
                             >
                               {card.content}
                             </div>
-                            {card.type === "kanji" && showFurigana && card.reading && (
-                              <div className="mt-2 space-y-1">
-                                <div className="text-xs font-bold text-purple-600 dark:text-purple-400">
-                                  {card.reading}
+                            {card.type === "kanji" &&
+                              showFurigana &&
+                              card.reading && (
+                                <div className="mt-2 space-y-1">
+                                  <div className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                                    {card.reading}
+                                  </div>
+                                  <div className="text-[10px] font-mono text-slate-400">
+                                    ({card.romaji})
+                                  </div>
                                 </div>
-                                <div className="text-[10px] font-mono text-slate-400">
-                                  ({card.romaji})
-                                </div>
-                              </div>
-                            )}
+                              )}
                           </div>
                         ) : (
                           <div className="text-4xl text-purple-300 dark:text-purple-700">
@@ -1385,20 +1424,22 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
                       className="text-amber-600 mt-0.5 flex-shrink-0"
                     />
                     <div className="text-sm text-amber-900 dark:text-amber-200 space-y-2">
-                      <p className="font-black text-base">📚 Kapan Menggunakan Onyomi & Kunyomi?</p>
+                      <p className="font-black text-base">
+                        📚 Kapan Menggunakan Onyomi & Kunyomi?
+                      </p>
                       <p>
                         <strong className="text-purple-600 dark:text-purple-400">
                           Onyomi (音読み)
-                        </strong>: Digunakan dalam{" "}
-                        <strong>kata majemuk</strong> (2+ kanji). Contoh:
-                        学校 (がっこう - sekolah)
+                        </strong>
+                        : Digunakan dalam <strong>kata majemuk</strong> (2+
+                        kanji). Contoh: 学校 (がっこう - sekolah)
                       </p>
                       <p>
                         <strong className="text-pink-600 dark:text-pink-400">
                           Kunyomi (訓読み)
-                        </strong>: Digunakan saat kanji{" "}
-                        <strong>berdiri sendiri</strong> atau dengan
-                        hiragana. Contoh: 学ぶ (まなぶ - belajar)
+                        </strong>
+                        : Digunakan saat kanji <strong>berdiri sendiri</strong>{" "}
+                        atau dengan hiragana. Contoh: 学ぶ (まなぶ - belajar)
                       </p>
                     </div>
                   </div>
@@ -1436,7 +1477,9 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
           <div className="w-full max-w-4xl max-h-[90vh] bg-white dark:bg-slate-800 rounded-3xl shadow-2xl overflow-hidden">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">📝 Pembahasan Soal</h2>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+                  📝 Pembahasan Soal
+                </h2>
                 <button
                   onClick={() => setShowReview(false)}
                   className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400"
@@ -1445,31 +1488,37 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
               <div className="space-y-6">
                 {config.mode === "memory" ? (
                   <div className="text-center py-8">
                     <p className="text-slate-600 dark:text-slate-400">
-                      Mode Memory Match tidak memiliki pembahasan soal karena bersifat acak.
+                      Mode Memory Match tidak memiliki pembahasan soal karena
+                      bersifat acak.
                     </p>
                   </div>
                 ) : (
                   questions.map((question, index) => {
                     const userAnswer = question.userAnswer || null;
                     const isCorrect = userAnswer === question.correctAnswer;
-                    
+
                     return (
-                      <div key={index} className="border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
+                      <div
+                        key={index}
+                        className="border border-slate-200 dark:border-slate-700 rounded-2xl p-6"
+                      >
                         <div className="flex items-start gap-4">
-                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                            isCorrect 
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-                          }`}>
+                          <div
+                            className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                              isCorrect
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                                : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                            }`}
+                          >
                             {index + 1}
                           </div>
-                          
+
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-3">
                               <span className="text-3xl font-bold text-slate-800 dark:text-white">
@@ -1478,48 +1527,60 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
                               {showFurigana && question.kanji && (
                                 <div className="flex flex-col gap-1">
                                   <span className="text-sm font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded">
-                                    {[...(question.kanji.onyomi || []), ...(question.kanji.kunyomi || [])][0]?.reading || ''}
+                                    {[
+                                      ...(question.kanji.onyomi || []),
+                                      ...(question.kanji.kunyomi || []),
+                                    ][0]?.reading || ""}
                                   </span>
                                   <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                                    ({[...(question.kanji.onyomi || []), ...(question.kanji.kunyomi || [])][0]?.romaji || ''})
+                                    (
+                                    {[
+                                      ...(question.kanji.onyomi || []),
+                                      ...(question.kanji.kunyomi || []),
+                                    ][0]?.romaji || ""}
+                                    )
                                   </span>
                                 </div>
                               )}
                             </div>
-                            
+
                             <p className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-4">
                               {question.question}
                             </p>
-                            
+
                             <div className="space-y-2">
                               {question.options.map((option, optIndex) => (
-                                <div 
+                                <div
                                   key={optIndex}
                                   className={`p-3 rounded-xl border-2 ${
                                     option === question.correctAnswer
-                                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                                       : option === userAnswer && !isCorrect
-                                      ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                                      : 'border-slate-200 dark:border-slate-700'
+                                      ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                                      : "border-slate-200 dark:border-slate-700"
                                   }`}
                                 >
                                   <div className="flex items-center gap-3">
-                                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
-                                      option === question.correctAnswer
-                                        ? 'bg-green-500 text-white'
-                                        : option === userAnswer && !isCorrect
-                                        ? 'bg-red-500 text-white'
-                                        : 'bg-slate-300 dark:bg-slate-600 text-slate-600 dark:text-slate-400'
-                                    }`}>
+                                    <span
+                                      className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
+                                        option === question.correctAnswer
+                                          ? "bg-green-500 text-white"
+                                          : option === userAnswer && !isCorrect
+                                          ? "bg-red-500 text-white"
+                                          : "bg-slate-300 dark:bg-slate-600 text-slate-600 dark:text-slate-400"
+                                      }`}
+                                    >
                                       {String.fromCharCode(65 + optIndex)}
                                     </span>
-                                    <span className={`${
-                                      option === question.correctAnswer
-                                        ? 'text-green-700 dark:text-green-400 font-medium'
-                                        : option === userAnswer && !isCorrect
-                                        ? 'text-red-700 dark:text-red-400'
-                                        : 'text-slate-600 dark:text-slate-400'
-                                    }`}>
+                                    <span
+                                      className={`${
+                                        option === question.correctAnswer
+                                          ? "text-green-700 dark:text-green-400 font-medium"
+                                          : option === userAnswer && !isCorrect
+                                          ? "text-red-700 dark:text-red-400"
+                                          : "text-slate-600 dark:text-slate-400"
+                                      }`}
+                                    >
                                       {option}
                                     </span>
                                     {option === question.correctAnswer && (
@@ -1536,11 +1597,14 @@ export default function InteractiveKanjiQuiz({ kanjiData, level }) {
                                 </div>
                               ))}
                             </div>
-                            
+
                             {question.explanation && (
                               <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
                                 <div className="flex items-start gap-2">
-                                  <Lightbulb className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" size={16} />
+                                  <Lightbulb
+                                    className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
+                                    size={16}
+                                  />
                                   <div>
                                     <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
                                       Penjelasan:
